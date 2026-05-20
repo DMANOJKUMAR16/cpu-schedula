@@ -14,8 +14,8 @@ const STYLES = `
   --line:     rgba(255,255,255,0.06);
   --line2:    rgba(255,255,255,0.10);
   --t1:       #eef0f5;
-  --t2:       #7c8494;
-  --t3:       #454d5c;
+  --t2:       #e0e7ff;
+  --t3:       #bfdbfe;
   --accent:   #f97316;
   --accent2:  rgba(249,115,22,0.12);
   --accent3:  rgba(249,115,22,0.25);
@@ -41,13 +41,22 @@ const STYLES = `
 }
 
 html, body { height: 100%; overflow: hidden; }
-body { font-family: var(--sans); background: var(--bg); color: var(--t1); line-height: 1.6; font-size: 14px; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--t1);
+  line-height: 1.8;
+  font-size: 17px;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 #root { height: 100%; }
 
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--t3); }
+::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 
 @keyframes fadeUp   { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
 @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
@@ -55,7 +64,18 @@ body { font-family: var(--sans); background: var(--bg); color: var(--t1); line-h
 @keyframes slideIn  { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
 @keyframes float    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 @keyframes pulse    { 0%,100%{opacity:.6} 50%{opacity:1} }
-@keyframes cpuGlow  { 0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.2)} 50%{box-shadow:0 0 20px 4px rgba(249,115,22,.35)} }
+@keyframes cpuGlow  {
+  0%,100%{
+    box-shadow:
+      0 0 0 0 rgba(249,115,22,.18),
+      0 0 20px rgba(249,115,22,.08);
+  }
+  50%{
+    box-shadow:
+      0 0 35px 10px rgba(249,115,22,.45),
+      0 0 70px rgba(249,115,22,.18);
+  }
+}
 @keyframes shimmer  { 0%{background-position:-300% center} 100%{background-position:300% center} }
 @keyframes barFill  { from{width:0} to{width:var(--w,100%)} }
 @keyframes spin     { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
@@ -135,7 +155,7 @@ const Tag = ({children,color="#f97316"}) => (
 );
 
 const SectionLabel = ({children}) => (
-  <div style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--t3)",letterSpacing:".12em",
+  <div style={{fontFamily:"var(--mono)",fontSize:11,color:"#c7d2fe",letterSpacing:".12em",
     textTransform:"uppercase",marginBottom:8}}>
     {children}
   </div>
@@ -176,14 +196,14 @@ function Sidebar({ active, onNav, progress }) {
           fontSize:13,fontWeight:800,color:"#fff",flexShrink:0}}>C</div>
         <div>
           <div style={{fontSize:13,fontWeight:700,lineHeight:1.2}}>Coding Pro</div>
-          <div style={{fontSize:10,color:"var(--t3)",letterSpacing:".08em"}}>OS · CPU SCHEDULING</div>
+          <div style={{fontSize:10,color:"#c7d2fe",letterSpacing:".08em"}}>OS · CPU SCHEDULING</div>
         </div>
       </div>
 
       {/* progress bar */}
       <div style={{padding:"12px 20px",borderBottom:"1px solid var(--line)"}}>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-          <span style={{fontSize:11,color:"var(--t3)"}}>Module progress</span>
+          <span style={{fontSize:11,color:"#c7d2fe"}}>Module progress</span>
           <span style={{fontSize:11,color:"var(--accent)",fontFamily:"var(--mono)"}}>{progress}%</span>
         </div>
         <div style={{height:3,borderRadius:2,background:"var(--bg3)"}}>
@@ -194,7 +214,7 @@ function Sidebar({ active, onNav, progress }) {
 
       {/* nav */}
       <nav style={{flex:1,overflowY:"auto",padding:"8px 10px"}}>
-        <div style={{fontSize:10,color:"var(--t3)",letterSpacing:".1em",
+        <div style={{fontSize:10,color:"#c7d2fe",letterSpacing:".1em",
           padding:"8px 10px 4px",textTransform:"uppercase"}}>Learning Path</div>
         {NAV.map((item,i) => {
           const isActive = active===item.id;
@@ -205,7 +225,7 @@ function Sidebar({ active, onNav, progress }) {
                 padding:"8px 10px",borderRadius:"var(--r8)",border:"none",cursor:"pointer",
                 background: isActive ? "var(--accent2)" : "transparent",
                 borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
-                color: isActive ? "var(--t1)" : isDone ? "var(--t2)" : "var(--t2)",
+                color: isActive ? "var(--t1)" : isDone ? "#e2e8f0" : "#e2e8f0",
                 textAlign:"left",transition:"all .15s ease",marginBottom:2,
               }}
               onMouseEnter={e=>{ if(!isActive) e.currentTarget.style.background="rgba(255,255,255,.04)"; }}
@@ -215,15 +235,15 @@ function Sidebar({ active, onNav, progress }) {
                 display:"flex",alignItems:"center",justifyContent:"center",
                 fontSize:11,
                 background: isActive ? "var(--accent)" : isDone ? "var(--green2)" : "var(--bg3)",
-                color: isActive ? "#fff" : isDone ? "var(--green)" : "var(--t3)",
+                color: isActive ? "#fff" : isDone ? "var(--green)" : "#cbd5e1",
                 fontFamily:"var(--mono)",fontWeight:600,
               }}>
                 {isDone ? "✓" : i+1}
               </span>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight: isActive?600:400,
-                  color: isActive?"var(--t1)":"var(--t2)"}}>{item.label}</div>
-                <div style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)"}}>{item.tag}</div>
+                  color: isActive?"var(--t1)":"#e2e8f0"}}>{item.label}</div>
+                <div style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)"}}>{item.tag}</div>
               </div>
               {isActive&&<div style={{width:5,height:5,borderRadius:"50%",background:"var(--accent)",flexShrink:0}}/>}
             </button>
@@ -233,12 +253,12 @@ function Sidebar({ active, onNav, progress }) {
 
       {/* footer */}
       <div style={{padding:"14px 20px",borderTop:"1px solid var(--line)"}}>
-        <div style={{fontSize:10,color:"var(--t3)",marginBottom:8}}>Continue Learning</div>
+        <div style={{fontSize:10,color:"#c7d2fe",marginBottom:8}}>Continue Learning</div>
         {["Memory Management","Process Synchronization"].map(t=>(
-          <a key={t} href="#" style={{display:"block",fontSize:11,color:"var(--t2)",
+          <a key={t} href="#" style={{display:"block",fontSize:11,color:"#f1f5f9",
             textDecoration:"none",padding:"4px 0",transition:"color .15s"}}
             onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"}
-            onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
+            onMouseLeave={e=>e.currentTarget.style.color="#e2e8f0"}>
             → {t}
           </a>
         ))}
@@ -257,11 +277,11 @@ function Header({ chapter, onPrev, onNext, hasPrev, hasNext }) {
       background:"var(--bg1)",flexShrink:0}}>
       <Tag color="var(--accent)">CHAPTER {chapter.num}</Tag>
       <span style={{fontSize:15,fontWeight:600,color:"var(--t1)"}}>{chapter.label}</span>
-      <span style={{fontSize:13,color:"var(--t3)"}}>{chapter.sub}</span>
+      <span style={{fontSize:13,color:"#c7d2fe"}}>{chapter.sub}</span>
       <div style={{marginLeft:"auto",display:"flex",gap:8}}>
         <button onClick={onPrev} disabled={!hasPrev}
           style={{padding:"5px 14px",borderRadius:6,border:"1px solid var(--line2)",
-            background:"transparent",color:hasPrev?"var(--t2)":"var(--t3)",
+            background:"transparent",color:hasPrev?"#e2e8f0":"#cbd5e1",
             cursor:hasPrev?"pointer":"not-allowed",fontSize:12,transition:"all .15s"}}
           onMouseEnter={e=>{ if(hasPrev) e.currentTarget.style.background="var(--bg3)";}}
           onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
@@ -270,7 +290,7 @@ function Header({ chapter, onPrev, onNext, hasPrev, hasNext }) {
         <button onClick={onNext} disabled={!hasNext}
           style={{padding:"5px 14px",borderRadius:6,border:"1px solid var(--accent3)",
             background: hasNext?"var(--accent2)":"transparent",
-            color:hasNext?"var(--accent)":"var(--t3)",
+            color:hasNext?"var(--accent)":"#cbd5e1",
             cursor:hasNext?"pointer":"not-allowed",fontSize:12,fontWeight:500,transition:"all .15s"}}>
           Next →
         </button>
@@ -297,7 +317,7 @@ function LiveProcessFlow() {
 
   return (
     <div style={{height:100,borderRadius:"var(--r12)",border:"1px solid var(--line)",
-      background:"var(--bg2)",position:"relative",overflow:"hidden",marginTop:28}}>
+      background:"linear-gradient(180deg,#171b23,#12161d)",position:"relative",overflow:"hidden",marginTop:28}}>
       {/* track line */}
       <div style={{position:"absolute",top:"50%",left:20,right:90,height:1,
         background:"var(--line2)",transform:"translateY(-50%)"}}/>
@@ -345,11 +365,11 @@ function IntroChapter() {
         letterSpacing:"-0.03em",lineHeight:1.1,marginBottom:16}}>
         CPU Scheduling
       </h1>
-      <p style={{fontSize:17,color:"var(--t2)",maxWidth:560,lineHeight:1.75,marginBottom:8}}>
+      <p style={{fontSize:22,color:"#f1f5ff",fontWeight:400,maxWidth:560,lineHeight:1.75,marginBottom:8}}>
         Your computer runs dozens of programs simultaneously.
         But the CPU can only execute <span style={{color:"var(--t1)",fontWeight:500}}>one process at a time.</span>
       </p>
-      <p style={{fontSize:17,color:"var(--t2)",maxWidth:560,lineHeight:1.75}}>
+      <p style={{fontSize:22,color:"#f1f5ff",fontWeight:400,maxWidth:560,lineHeight:1.75}}>
         CPU Scheduling is the set of algorithms that decide{" "}
         <span style={{color:"var(--accent)",fontWeight:600}}>which process runs next, and for how long.</span>
       </p>
@@ -368,7 +388,7 @@ function IntroChapter() {
             border:`1px solid ${card.color}25`,background:`${card.color}08`}}>
             <div style={{fontSize:10,color:card.color,fontFamily:"var(--mono)",
               letterSpacing:".1em",marginBottom:6}}>{card.label.toUpperCase()}</div>
-            <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55}}>{card.body}</div>
+            <div style={{fontSize:16,color:"#eef2ff",lineHeight:1.85,lineHeight:1.55}}>{card.body}</div>
           </div>
         ))}
       </div>
@@ -376,9 +396,9 @@ function IntroChapter() {
       <Divider />
 
       <div style={{padding:"18px 20px",borderRadius:"var(--r12)",border:"1px solid var(--line2)",
-        background:"var(--bg2)",maxWidth:560}}>
-        <div style={{fontSize:12,color:"var(--t3)",marginBottom:6}}>Why is this hard to learn?</div>
-        <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.65}}>
+        background:"linear-gradient(180deg,#171b23,#12161d)",maxWidth:560}}>
+        <div style={{fontSize:12,color:"#c7d2fe",marginBottom:6}}>Why is this hard to learn?</div>
+        <p style={{fontSize:14,color:"#f1f5f9",lineHeight:1.65}}>
           Textbooks describe scheduling with static Gantt charts.
           Without seeing processes move, wait, and execute in real time — the mental model never fully forms.
           This module fixes that.
@@ -389,7 +409,7 @@ function IntroChapter() {
         border:"1px solid var(--line)",display:"inline-flex",alignItems:"center",gap:8}}>
         <div style={{width:6,height:6,borderRadius:"50%",background:"var(--green)",
           animation:"pulse 2s ease infinite"}}/>
-        <span style={{fontSize:12,color:"var(--t2)"}}>
+        <span style={{fontSize:12,color:"#f1f5f9"}}>
           Explore interactive operating system concepts on{" "}
           <a href="#" style={{color:"var(--accent)",textDecoration:"none"}}
             onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
@@ -449,7 +469,7 @@ function ConceptVisual({ id, color }) {
               animation:`float ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}>
               P{i+1}
             </div>
-            <span style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)"}}>proc</span>
+            <span style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)"}}>proc</span>
           </div>
         ))}
       </div>
@@ -461,15 +481,15 @@ function ConceptVisual({ id, color }) {
       <div style={{display:"flex",gap:20,alignItems:"flex-end",paddingBottom:16}}>
         {[{id:"P1",b:2,c:PC[0]},{id:"P2",b:6,c:PC[1]},{id:"P3",b:4,c:PC[2]}].map(p=>(
           <div key={p.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-            <span style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)"}}>{p.b}u</span>
+            <span style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)"}}>{p.b}u</span>
             <div style={{width:32,borderRadius:"4px 4px 0 0",
               height:p.b*14,background:p.c.bg,
               boxShadow:`0 0 12px ${p.c.glow}`,transition:"height .4s"}}/>
-            <span style={{fontSize:10,color:"var(--t2)",fontWeight:500}}>{p.id}</span>
+            <span style={{fontSize:10,color:"#f1f5f9",fontWeight:500}}>{p.id}</span>
           </div>
         ))}
       </div>
-      <div style={{position:"absolute",bottom:8,fontSize:10,color:"var(--t3)"}}>
+      <div style={{position:"absolute",bottom:8,fontSize:10,color:"#c7d2fe"}}>
         Short burst → faster completion
       </div>
     </div>
@@ -487,11 +507,11 @@ function ConceptVisual({ id, color }) {
                 fontSize:10,fontWeight:600,color:a.c.t,marginBottom:6,
                 boxShadow:`0 0 10px ${a.c.glow}`}}>{a.p}</div>
               <div style={{width:1,height:14,background:"var(--line2)"}}/>
-              <span style={{fontSize:10,color:"var(--t3)",marginTop:4,fontFamily:"var(--mono)"}}>t={a.t}</span>
+              <span style={{fontSize:10,color:"#c7d2fe",marginTop:4,fontFamily:"var(--mono)"}}>t={a.t}</span>
             </div>
           ))}
         </div>
-        <div style={{position:"absolute",bottom:0,right:0,fontSize:10,color:"var(--t3)"}}>
+        <div style={{position:"absolute",bottom:0,right:0,fontSize:10,color:"#c7d2fe"}}>
           time →
         </div>
       </div>
@@ -501,7 +521,7 @@ function ConceptVisual({ id, color }) {
   if(id==="queue") return (
     <div style={base}>
       <div style={{display:"flex",alignItems:"center",gap:6}}>
-        <span style={{fontSize:10,color:"var(--t3)",marginRight:4,fontFamily:"var(--mono)"}}>QUEUE</span>
+        <span style={{fontSize:10,color:"#c7d2fe",marginRight:4,fontFamily:"var(--mono)"}}>QUEUE</span>
         {PC.slice(0,4).map((c,i)=>{
           const active=i < (3 - (t%3===0?0:t%3>1?1:0));
           return (
@@ -516,7 +536,7 @@ function ConceptVisual({ id, color }) {
             </div>
           );
         })}
-        <span style={{fontSize:16,color:"var(--t3)",marginLeft:4}}>→</span>
+        <span style={{fontSize:16,color:"#c7d2fe",marginLeft:4}}>→</span>
         <div style={{width:44,height:44,borderRadius:10,border:"1.5px solid var(--accent)",
           background:"rgba(249,115,22,.07)",display:"flex",alignItems:"center",
           justifyContent:"center",fontSize:10,color:"var(--accent)",
@@ -539,10 +559,10 @@ function ConceptVisual({ id, color }) {
                 height:"100%",borderRadius:3,background:item.c.bg,
                 animation:"barFill 1.2s ease forwards"}}/>
             </div>
-            <span style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",minWidth:24}}>{item.w}u</span>
+            <span style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)",minWidth:24}}>{item.w}u</span>
           </div>
         ))}
-        <div style={{fontSize:10,color:"var(--t3)",textAlign:"center",marginTop:4}}>
+        <div style={{fontSize:10,color:"#c7d2fe",textAlign:"center",marginTop:4}}>
           waiting time per process
         </div>
       </div>
@@ -560,10 +580,10 @@ function ConceptVisual({ id, color }) {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:4}}>
           <div style={{height:2,flex:1,background:"var(--line2)"}}/>
-          <span style={{fontSize:10,color:"var(--t2)",fontFamily:"var(--mono)"}}>Turnaround = 7 units</span>
+          <span style={{fontSize:10,color:"#f1f5f9",fontFamily:"var(--mono)"}}>Turnaround = 7 units</span>
           <div style={{height:2,flex:1,background:"var(--line2)"}}/>
         </div>
-        <div style={{fontSize:10,color:"var(--t3)",textAlign:"center",marginTop:6}}>
+        <div style={{fontSize:10,color:"#c7d2fe",textAlign:"center",marginTop:6}}>
           arrival → completion
         </div>
       </div>
@@ -583,7 +603,7 @@ function ConceptsChapter() {
         letterSpacing:"-0.025em",marginBottom:8}}>
         The building blocks
       </h2>
-      <p style={{fontSize:15,color:"var(--t2)",marginBottom:28,maxWidth:500}}>
+      <p style={{fontSize:18,color:"#f8fafc",lineHeight:1.9,marginBottom:28,maxWidth:500}}>
         Click any concept to see an interactive explanation.
       </p>
 
@@ -593,7 +613,7 @@ function ConceptsChapter() {
           <button key={c.id} onClick={()=>setActive(c.id)}
             style={{padding:"7px 16px",borderRadius:40,border:`1px solid ${active===c.id?c.color:"var(--line2)"}`,
               background:active===c.id?`${c.color}15`:"transparent",
-              color:active===c.id?c.color:"var(--t2)",
+              color:active===c.id?c.color:"#f1f5f9",
               cursor:"pointer",fontSize:13,fontWeight:500,transition:"all .18s ease",
               fontFamily:"var(--sans)"}}>
             {c.icon} {c.label}
@@ -607,8 +627,8 @@ function ConceptsChapter() {
         <div style={{display:"flex",flexDirection:"column",justifyContent:"center",gap:12}}>
           <Tag color={concept.color}>{concept.label.toUpperCase()}</Tag>
           <p style={{fontSize:16,color:"var(--t1)",lineHeight:1.72}}>{concept.body}</p>
-          <div style={{fontSize:12,color:"var(--t3)",fontFamily:"var(--mono)",
-            padding:"8px 12px",borderRadius:6,background:"var(--bg2)",
+          <div style={{fontSize:12,color:"#c7d2fe",fontFamily:"var(--mono)",
+            padding:"8px 12px",borderRadius:6,background:"linear-gradient(180deg,#171b23,#12161d)",
             border:"1px solid var(--line)"}}>
             key_term: <span style={{color:concept.color}}>{concept.id}</span>
           </div>
@@ -617,10 +637,10 @@ function ConceptsChapter() {
       </div>
 
       <Divider />
-      <a href="#" style={{fontSize:12,color:"var(--t3)",textDecoration:"none",
+      <a href="#" style={{fontSize:12,color:"#c7d2fe",textDecoration:"none",
         display:"inline-flex",alignItems:"center",gap:6,transition:"color .15s"}}
         onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"}
-        onMouseLeave={e=>e.currentTarget.style.color="var(--t3)"}>
+        onMouseLeave={e=>e.currentTarget.style.color="#cbd5e1"}>
         Explore more visual learning labs on Coding Pro →
       </a>
     </div>
@@ -635,34 +655,44 @@ function AlgoVisual({ steps, currentStep }) {
   const maxEnd = Math.max(...steps.map(s=>s.end));
   return (
     <div style={{marginTop:20}}>
-      <div style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",
+      <div style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)",
         letterSpacing:".08em",marginBottom:8}}>GANTT TIMELINE</div>
       <div style={{borderRadius:"var(--r8)",overflow:"hidden",border:"1px solid var(--line)"}}>
         <div style={{display:"flex",height:36}}>
           {steps.map((s,i)=>(
             <div key={i} style={{
               width:`${((s.end-s.start)/maxEnd)*100}%`,
-              background: i<=currentStep ? s.color.bg : `${s.color.bg}28`,
+              background:
+              i < currentStep
+                ? s.color.bg
+                : i === currentStep
+                ? `linear-gradient(135deg, ${s.color.bg}, rgba(255,255,255,.92))`
+                : `${s.color.bg}18`,
               display:"flex",alignItems:"center",justifyContent:"center",
               fontSize:11,fontWeight:600,color:"#fff",
               borderRight:"1px solid rgba(0,0,0,.2)",
               position:"relative",overflow:"hidden",
-              transition:"background .4s ease",
+              transition:"all .45s cubic-bezier(.22,1,.36,1)",
+              transform:i===currentStep?"scaleY(1.12)":"scaleY(1)",
+              boxShadow:
+                i===currentStep
+                  ? `0 0 30px ${s.color.glow}`
+                  : "none",
+              zIndex:i===currentStep?5:1,
             }}>
               {i<=currentStep?s.pid:""}
               {i===currentStep&&(
                 <div style={{position:"absolute",inset:0,
-                  background:"linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent)",
-                  backgroundSize:"300% 100%",animation:"shimmer 1.2s linear infinite"}}/>
+                  background:"linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent)", backgroundSize:"300% 100%", animation:"shimmer .85s linear infinite"}}/>
               )}
             </div>
           ))}
         </div>
-        <div style={{display:"flex",background:"var(--bg2)"}}>
+        <div style={{display:"flex",background:"linear-gradient(180deg,#171b23,#12161d)"}}>
           {steps.map((s,i)=>(
             <div key={i} style={{width:`${((s.end-s.start)/maxEnd)*100}%`,
               textAlign:"right",paddingRight:4,fontSize:9,
-              color:"var(--t3)",fontFamily:"var(--mono)",padding:"3px 4px 3px 0"}}>
+              color:"#c7d2fe",fontFamily:"var(--mono)",padding:"3px 4px 3px 0"}}>
               {s.end}
             </div>
           ))}
@@ -687,7 +717,7 @@ function FCFSChapter() {
         letterSpacing:"-0.025em",marginTop:10,marginBottom:6}}>
         First Come, First Served
       </h2>
-      <p style={{fontSize:15,color:"var(--t2)",maxWidth:540,lineHeight:1.7,marginBottom:24}}>
+      <p style={{fontSize:18,color:"#f8fafc",lineHeight:1.9,maxWidth:540,lineHeight:1.7,marginBottom:24}}>
         The simplest scheduler. Processes execute in the exact order they arrive —
         no priority, no reordering. Like a queue at a ticket counter.
       </p>
@@ -697,11 +727,11 @@ function FCFSChapter() {
           {l:"Rule",     v:"Arrival order",      c:"var(--accent)"},
           {l:"Strength", v:"No starvation",      c:"var(--green)"},
           {l:"Weakness", v:"Convoy effect",      c:"var(--rose)"},
-          {l:"Preemptive",v:"No",                c:"var(--t3)"},
+          {l:"Preemptive",v:"No",                c:"#cbd5e1"},
         ].map(item=>(
           <div key={item.l} style={{padding:"8px 14px",borderRadius:"var(--r8)",
-            border:"1px solid var(--line)",background:"var(--bg2)"}}>
-            <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:2}}>{item.l}</div>
+            border:"1px solid var(--line)",background:"linear-gradient(180deg,#171b23,#12161d)"}}>
+            <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)",marginBottom:2}}>{item.l}</div>
             <div style={{fontSize:12,color:item.c,fontWeight:500}}>{item.v}</div>
           </div>
         ))}
@@ -711,7 +741,7 @@ function FCFSChapter() {
       <div style={{border:"1px solid var(--line)",borderRadius:"var(--r12)",overflow:"hidden",marginBottom:24}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",
           padding:"8px 16px",background:"var(--bg3)",
-          fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",letterSpacing:".08em",
+          fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)",letterSpacing:".08em",
           borderBottom:"1px solid var(--line)"}}>
           <span>PROCESS</span><span>ARRIVAL</span><span>BURST</span>
         </div>
@@ -725,8 +755,8 @@ function FCFSChapter() {
                 boxShadow:`0 0 6px ${p.color.glow}`}}/>
               <span style={{fontFamily:"var(--mono)",fontSize:13,fontWeight:500}}>{p.id}</span>
             </div>
-            <span style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--t2)"}}>t={p.arrival}</span>
-            <span style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--t2)"}}>{p.burst} units</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:16,color:"#eef2ff",lineHeight:1.85}}>t={p.arrival}</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:16,color:"#eef2ff",lineHeight:1.85}}>{p.burst} units</span>
           </div>
         ))}
       </div>
@@ -738,10 +768,10 @@ function FCFSChapter() {
         <div key={step} style={{marginTop:16,padding:"14px 16px",borderRadius:"var(--r8)",
           border:`1px solid ${cur.color.bg}30`,background:`${cur.color.bg}0a`,
           animation:"fadeUp .25s ease both"}}>
-          <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:4}}>
+          <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)",marginBottom:4}}>
             STEP {step+1} / {steps.length}
           </div>
-          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{cur.note}</p>
+          <p style={{fontSize:16,color:"#eef2ff",lineHeight:1.85,lineHeight:1.6}}>{cur.note}</p>
         </div>
       )}
 
@@ -756,7 +786,7 @@ function FCFSChapter() {
         </button>
         <button onClick={()=>setStep(-1)}
           style={{padding:"8px 16px",borderRadius:"var(--r8)",border:"1px solid var(--line2)",
-            background:"transparent",color:"var(--t2)",cursor:"pointer",fontSize:12}}>
+            background:"transparent",color:"#f1f5f9",cursor:"pointer",fontSize:12}}>
           ↺ Reset
         </button>
         {step===steps.length-1&&(
@@ -788,7 +818,7 @@ function SJFChapter() {
         letterSpacing:"-0.025em",marginTop:10,marginBottom:6}}>
         Shortest Job First
       </h2>
-      <p style={{fontSize:15,color:"var(--t2)",maxWidth:540,lineHeight:1.7,marginBottom:24}}>
+      <p style={{fontSize:18,color:"#f8fafc",lineHeight:1.9,maxWidth:540,lineHeight:1.7,marginBottom:24}}>
         Always picks the process with the smallest burst time from the ready queue.
         Provably optimal for average waiting time — but requires knowing burst times upfront.
       </p>
@@ -798,11 +828,11 @@ function SJFChapter() {
           {l:"Rule",      v:"Shortest burst first", c:"var(--blue)"},
           {l:"Strength",  v:"Min avg wait time",    c:"var(--green)"},
           {l:"Weakness",  v:"Starvation possible",  c:"var(--rose)"},
-          {l:"Preemptive",v:"No (non-preemptive)",  c:"var(--t3)"},
+          {l:"Preemptive",v:"No (non-preemptive)",  c:"#cbd5e1"},
         ].map(item=>(
           <div key={item.l} style={{padding:"8px 14px",borderRadius:"var(--r8)",
-            border:"1px solid var(--line)",background:"var(--bg2)"}}>
-            <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:2}}>{item.l}</div>
+            border:"1px solid var(--line)",background:"linear-gradient(180deg,#171b23,#12161d)"}}>
+            <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)",marginBottom:2}}>{item.l}</div>
             <div style={{fontSize:12,color:item.c,fontWeight:500}}>{item.v}</div>
           </div>
         ))}
@@ -810,7 +840,7 @@ function SJFChapter() {
 
       {/* visual: sort by burst */}
       <div style={{marginBottom:24}}>
-        <div style={{fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",
+        <div style={{fontSize:11,color:"#c7d2fe",fontFamily:"var(--mono)",
           letterSpacing:".08em",marginBottom:10}}>SJF EXECUTION ORDER (sorted by burst)</div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {sorted.map((p,i)=>(
@@ -823,10 +853,10 @@ function SJFChapter() {
                 transition:"border .3s"}}>
                 {p.id}
               </div>
-              <span style={{fontSize:10,fontFamily:"var(--mono)",color:"var(--t3)"}}>
+              <span style={{fontSize:10,fontFamily:"var(--mono)",color:"#c7d2fe"}}>
                 b={p.burst}
               </span>
-              {i<sorted.length-1&&<span style={{fontSize:14,color:"var(--t3)",marginTop:2}}>→</span>}
+              {i<sorted.length-1&&<span style={{fontSize:14,color:"#c7d2fe",marginTop:2}}>→</span>}
             </div>
           ))}
         </div>
@@ -838,10 +868,10 @@ function SJFChapter() {
         <div key={step} style={{marginTop:16,padding:"14px 16px",borderRadius:"var(--r8)",
           border:`1px solid ${cur.color.bg}30`,background:`${cur.color.bg}0a`,
           animation:"fadeUp .25s ease both"}}>
-          <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:4}}>
+          <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)",marginBottom:4}}>
             STEP {step+1} / {steps.length}
           </div>
-          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{cur.note}</p>
+          <p style={{fontSize:16,color:"#eef2ff",lineHeight:1.85,lineHeight:1.6}}>{cur.note}</p>
         </div>
       )}
 
@@ -855,7 +885,7 @@ function SJFChapter() {
         </button>
         <button onClick={()=>setStep(-1)}
           style={{padding:"8px 16px",borderRadius:"var(--r8)",border:"1px solid var(--line2)",
-            background:"transparent",color:"var(--t2)",cursor:"pointer",fontSize:12}}>
+            background:"transparent",color:"#f1f5f9",cursor:"pointer",fontSize:12}}>
           ↺ Reset
         </button>
         {step===steps.length-1&&(
@@ -888,7 +918,7 @@ function RRChapter() {
         letterSpacing:"-0.025em",marginTop:10,marginBottom:6}}>
         Round Robin
       </h2>
-      <p style={{fontSize:15,color:"var(--t2)",maxWidth:540,lineHeight:1.7,marginBottom:24}}>
+      <p style={{fontSize:18,color:"#f8fafc",lineHeight:1.9,maxWidth:540,lineHeight:1.7,marginBottom:24}}>
         Each process gets a fixed time slice called a <span style={{color:"var(--teal)",fontWeight:500}}>quantum</span>.
         When the quantum expires, the process is preempted and cycles to the back of the queue.
         Fair, but more context switches.
@@ -902,8 +932,8 @@ function RRChapter() {
           {l:"Preemptive",v:"Yes",                  c:"var(--yellow)"},
         ].map(item=>(
           <div key={item.l} style={{padding:"8px 14px",borderRadius:"var(--r8)",
-            border:"1px solid var(--line)",background:"var(--bg2)"}}>
-            <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:2}}>{item.l}</div>
+            border:"1px solid var(--line)",background:"linear-gradient(180deg,#171b23,#12161d)"}}>
+            <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)",marginBottom:2}}>{item.l}</div>
             <div style={{fontSize:12,color:item.c,fontWeight:500}}>{item.v}</div>
           </div>
         ))}
@@ -912,18 +942,18 @@ function RRChapter() {
       {/* quantum selector */}
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:24,
         padding:"12px 16px",borderRadius:"var(--r8)",border:"1px solid var(--line)",
-        background:"var(--bg2)",width:"fit-content"}}>
-        <span style={{fontSize:12,color:"var(--t2)"}}>Time Quantum:</span>
+        background:"linear-gradient(180deg,#171b23,#12161d)",width:"fit-content"}}>
+        <span style={{fontSize:12,color:"#f1f5f9"}}>Time Quantum:</span>
         {[1,2,3,4].map(v=>(
           <button key={v} onClick={()=>setQ(v)}
             style={{width:30,height:30,borderRadius:6,border:`1px solid ${q===v?"var(--teal)":"var(--line2)"}`,
               background:q===v?"var(--teal2)":"transparent",
-              color:q===v?"var(--teal)":"var(--t3)",
+              color:q===v?"var(--teal)":"#cbd5e1",
               cursor:"pointer",fontSize:12,fontWeight:600,transition:"all .15s"}}>
             {v}
           </button>
         ))}
-        <span style={{fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginLeft:4}}>
+        <span style={{fontSize:11,color:"#c7d2fe",fontFamily:"var(--mono)",marginLeft:4}}>
           → {steps.length} total slices
         </span>
       </div>
@@ -934,10 +964,10 @@ function RRChapter() {
         <div key={`${step}-${q}`} style={{marginTop:16,padding:"14px 16px",borderRadius:"var(--r8)",
           border:`1px solid ${cur.color.bg}30`,background:`${cur.color.bg}0a`,
           animation:"fadeUp .25s ease both"}}>
-          <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:4}}>
+          <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)",marginBottom:4}}>
             SLICE {step+1} / {steps.length} · QUANTUM = {q}
           </div>
-          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{cur.note}</p>
+          <p style={{fontSize:16,color:"#eef2ff",lineHeight:1.85,lineHeight:1.6}}>{cur.note}</p>
         </div>
       )}
 
@@ -951,7 +981,7 @@ function RRChapter() {
         </button>
         <button onClick={()=>setStep(-1)}
           style={{padding:"8px 16px",borderRadius:"var(--r8)",border:"1px solid var(--line2)",
-            background:"transparent",color:"var(--t2)",cursor:"pointer",fontSize:12}}>
+            background:"transparent",color:"#f1f5f9",cursor:"pointer",fontSize:12}}>
           ↺ Reset
         </button>
         {step===steps.length-1&&(
@@ -1015,7 +1045,7 @@ function LiveSimulator() {
         letterSpacing:"-0.025em",marginBottom:8}}>
         Live Simulator
       </h2>
-      <p style={{fontSize:15,color:"var(--t2)",maxWidth:520,lineHeight:1.7,marginBottom:28}}>
+      <p style={{fontSize:18,color:"#f8fafc",lineHeight:1.9,maxWidth:520,lineHeight:1.7,marginBottom:28}}>
         Select an algorithm and watch processes move through the CPU in real time.
         Step manually or let autoplay run the full simulation.
       </p>
@@ -1027,7 +1057,7 @@ function LiveSimulator() {
             style={{padding:"9px 20px",borderRadius:"var(--r8)",
               border:`1px solid ${algo===key?m.colorRaw+"55":"var(--line2)"}`,
               background:algo===key?`${m.colorRaw}15`:"var(--bg2)",
-              color:algo===key?m.color:"var(--t2)",
+              color:algo===key?m.color:"#f1f5f9",
               cursor:"pointer",fontSize:13,fontWeight:500,transition:"all .18s",
               fontFamily:"var(--sans)"}}>
             <span style={{fontFamily:"var(--mono)",fontWeight:600,marginRight:5}}>{m.label}</span>
@@ -1036,14 +1066,14 @@ function LiveSimulator() {
         ))}
         {algo==="rr"&&(
           <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",
-            borderRadius:"var(--r8)",border:"1px solid var(--line)",background:"var(--bg2)"}}>
-            <span style={{fontSize:11,color:"var(--t3)"}}>Quantum:</span>
+            borderRadius:"var(--r8)",border:"1px solid var(--line)",background:"linear-gradient(180deg,#171b23,#12161d)"}}>
+            <span style={{fontSize:11,color:"#c7d2fe"}}>Quantum:</span>
             {[1,2,3,4].map(v=>(
               <button key={v} onClick={()=>setQ(v)}
                 style={{width:26,height:26,borderRadius:5,
                   border:`1px solid ${quantum===v?"var(--teal)":"var(--line2)"}`,
                   background:quantum===v?"var(--teal2)":"transparent",
-                  color:quantum===v?"var(--teal)":"var(--t3)",
+                  color:quantum===v?"var(--teal)":"#cbd5e1",
                   cursor:"pointer",fontSize:11,fontWeight:600,transition:"all .15s"}}>
                 {v}
               </button>
@@ -1054,11 +1084,11 @@ function LiveSimulator() {
 
       {/* ── ready queue ────────────────────────────────── */}
       <div style={{marginBottom:20}}>
-        <div style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",
+        <div style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)",
           letterSpacing:".08em",marginBottom:10}}>READY QUEUE</div>
         <div style={{display:"flex",gap:12,padding:"16px 20px",
           borderRadius:"var(--r12)",border:"1px solid var(--line)",
-          background:"var(--bg2)",minHeight:80,alignItems:"center",flexWrap:"wrap"}}>
+          background:"linear-gradient(180deg,#171b23,#12161d)",minHeight:80,alignItems:"center",flexWrap:"wrap"}}>
           {BASE_PROCS.map(p=>{
             const procSteps = steps.filter(s=>s.pid===p.id);
             const lastIdx   = step>=0 ? steps.slice(0,step+1).filter(s=>s.pid===p.id).length : 0;
@@ -1068,8 +1098,10 @@ function LiveSimulator() {
             return (
               <div key={p.id} style={{display:"flex",flexDirection:"column",
                 alignItems:"center",gap:5,
-                transform:isRunning?"translateY(-4px)":"translateY(0)",
-                transition:"all .4s cubic-bezier(.34,1.56,.64,1)",
+                transform:isRunning
+                  ? "translateY(-12px) scale(1.1)"
+                  : "translateY(0) scale(1)",
+                transition:"all .45s cubic-bezier(.22,1,.36,1)",
                 opacity:allDone&&!isRunning?.3:1}}>
                 <div style={{width:46,height:46,borderRadius:11,background:p.color.bg,
                   display:"flex",alignItems:"center",justifyContent:"center",
@@ -1079,7 +1111,7 @@ function LiveSimulator() {
                   transition:"all .4s ease"}}>
                   {p.id}
                 </div>
-                <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"}}>
+                <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)"}}>
                   {allDone&&!isRunning ? "✓ done" : isRunning ? "▶ run" : `b:${p.burst}`}
                 </div>
               </div>
@@ -1090,7 +1122,7 @@ function LiveSimulator() {
 
       {/* ── CPU execution ──────────────────────────────── */}
       <div style={{marginBottom:20}}>
-        <div style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",
+        <div style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)",
           letterSpacing:".08em",marginBottom:10}}>CPU EXECUTION</div>
         <div style={{
           padding:"24px 28px",borderRadius:"var(--r16)",
@@ -1098,7 +1130,7 @@ function LiveSimulator() {
           background:cur?`${cur.color.bg}08`:"var(--bg2)",
           display:"flex",alignItems:"center",gap:20,minHeight:96,
           transition:"all .45s ease",
-          animation:cur?"cpuGlow 2.5s ease infinite":"none",
+          animation:cur?"cpuGlow 1.15s ease-in-out infinite":"none",
         }}>
           {cur ? (
             <>
@@ -1110,31 +1142,31 @@ function LiveSimulator() {
                 {cur.pid}
               </div>
               <div style={{flex:1}}>
-                <div style={{fontSize:11,color:"var(--t3)",marginBottom:3}}>Currently executing</div>
+                <div style={{fontSize:11,color:"#c7d2fe",marginBottom:3}}>Currently executing</div>
                 <div style={{fontSize:22,fontWeight:700,color:cur.color.bg,letterSpacing:"-.02em"}}>
                   {cur.pid}
                 </div>
-                <div style={{fontSize:12,color:"var(--t2)",fontFamily:"var(--mono)",marginTop:2}}>
+                <div style={{fontSize:12,color:"#f1f5f9",fontFamily:"var(--mono)",marginTop:2}}>
                   t={cur.start} → t={cur.end} · {cur.end-cur.start} unit{cur.end-cur.start>1?"s":""}
                 </div>
               </div>
               <div style={{textAlign:"right",flexShrink:0}}>
-                <div style={{fontSize:10,color:"var(--t3)",marginBottom:6,fontFamily:"var(--mono)"}}>
+                <div style={{fontSize:10,color:"#c7d2fe",marginBottom:6,fontFamily:"var(--mono)"}}>
                   {step+1} / {steps.length}
                 </div>
                 <div style={{width:100,height:4,borderRadius:2,background:"var(--bg3)"}}>
                   <div style={{height:"100%",borderRadius:2,background:cur.color.bg,
                     width:`${((step+1)/steps.length)*100}%`,transition:"width .4s ease"}}/>
                 </div>
-                <div style={{fontSize:10,color:"var(--t3)",marginTop:4}}>
+                <div style={{fontSize:10,color:"#c7d2fe",marginTop:4}}>
                   {Math.round(((step+1)/steps.length)*100)}% complete
                 </div>
               </div>
             </>
           ) : (
-            <div style={{display:"flex",alignItems:"center",gap:12,color:"var(--t3)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,color:"#c7d2fe"}}>
               <div style={{width:48,height:48,borderRadius:10,
-                border:"1.5px dashed var(--t3)",display:"flex",
+                border:"1.5px dashed #cbd5e1",display:"flex",
                 alignItems:"center",justifyContent:"center",
                 fontSize:10,fontFamily:"var(--mono)"}}>idle</div>
               <span style={{fontSize:13}}>
@@ -1147,14 +1179,19 @@ function LiveSimulator() {
 
       {/* ── gantt ──────────────────────────────────────── */}
       <div style={{marginBottom:20}}>
-        <div style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",
+        <div style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)",
           letterSpacing:".08em",marginBottom:10}}>GANTT CHART</div>
         <div style={{borderRadius:"var(--r8)",overflow:"hidden",border:"1px solid var(--line)"}}>
           <div style={{display:"flex",height:40}}>
             {steps.map((s,i)=>(
               <div key={i} style={{
                 width:`${((s.end-s.start)/maxEnd)*100}%`,
-                background:i<=step?s.color.bg:`${s.color.bg}22`,
+                background:
+                i < step
+                  ? s.color.bg
+                  : i === step
+                  ? `linear-gradient(135deg, ${s.color.bg}, rgba(255,255,255,.92))`
+                  : `${s.color.bg}18`,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 fontSize:11,fontWeight:600,color:"#fff",
                 borderRight:"1px solid rgba(0,0,0,.2)",
@@ -1163,8 +1200,7 @@ function LiveSimulator() {
                 {i<=step?s.pid:""}
                 {i===step&&(
                   <div style={{position:"absolute",inset:0,
-                    background:"linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent)",
-                    backgroundSize:"300% 100%",animation:"shimmer 1s linear infinite"}}/>
+                    background:"linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent)", backgroundSize:"300% 100%", animation:"shimmer .85s linear infinite"}}/>
                 )}
               </div>
             ))}
@@ -1173,7 +1209,7 @@ function LiveSimulator() {
             {steps.map((s,i)=>(
               <div key={i} style={{width:`${((s.end-s.start)/maxEnd)*100}%`,
                 textAlign:"right",padding:"3px 4px 3px 0",
-                fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"}}>
+                fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)"}}>
                 {s.end}
               </div>
             ))}
@@ -1189,10 +1225,10 @@ function LiveSimulator() {
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:cur.color.bg,
               animation:"pulse 1.5s ease infinite"}}/>
-            <span style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",
+            <span style={{fontSize:10,color:"#c7d2fe",fontFamily:"var(--mono)",
               letterSpacing:".08em"}}>LIVE EXPLANATION</span>
           </div>
-          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.65}}>{cur.note}</p>
+          <p style={{fontSize:16,color:"#eef2ff",lineHeight:1.85,lineHeight:1.65}}>{cur.note}</p>
         </div>
       )}
 
@@ -1210,15 +1246,15 @@ function LiveSimulator() {
         <button onClick={()=>setStep(v=>Math.min(v+1,steps.length-1))}
           disabled={done||playing}
           style={{padding:"9px 20px",borderRadius:"var(--r8)",
-            border:"1px solid var(--line2)",background:"var(--bg2)",
-            color:"var(--t2)",cursor:(done||playing)?"not-allowed":"pointer",
+            border:"1px solid var(--line2)",background:"linear-gradient(180deg,#171b23,#12161d)",
+            color:"#f1f5f9",cursor:(done||playing)?"not-allowed":"pointer",
             fontSize:13,transition:"all .18s",opacity:(done||playing)?.4:1}}>
           Next Step →
         </button>
         <button onClick={reset}
           style={{padding:"9px 16px",borderRadius:"var(--r8)",
             border:"1px solid var(--line)",background:"transparent",
-            color:"var(--t3)",cursor:"pointer",fontSize:13}}>
+            color:"#c7d2fe",cursor:"pointer",fontSize:13}}>
           ↺ Reset
         </button>
         {done&&(
@@ -1231,10 +1267,10 @@ function LiveSimulator() {
       </div>
 
       <Divider />
-      <a href="#" style={{fontSize:12,color:"var(--t3)",textDecoration:"none",
+      <a href="#" style={{fontSize:12,color:"#c7d2fe",textDecoration:"none",
         display:"inline-flex",alignItems:"center",gap:6,transition:"color .15s"}}
         onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"}
-        onMouseLeave={e=>e.currentTarget.style.color="var(--t3)"}>
+        onMouseLeave={e=>e.currentTarget.style.color="#cbd5e1"}>
         Learn advanced scheduling — SRTF, Priority, Multilevel Queue →
       </a>
     </div>
@@ -1288,7 +1324,7 @@ function QuizChapter({ onComplete }) {
         <h2 style={{fontSize:32,fontWeight:800,marginBottom:6}}>
           {final} / {QS.length} correct
         </h2>
-        <p style={{fontSize:15,color:"var(--t2)",marginBottom:32,maxWidth:420,margin:"0 auto 32px"}}>
+        <p style={{fontSize:18,color:"#f8fafc",lineHeight:1.9,marginBottom:32,maxWidth:420,margin:"0 auto 32px"}}>
           {pct===100?"Perfect — you've mastered CPU scheduling fundamentals."
             :pct>=75?"Strong understanding. Review the simulator to solidify the rest."
             :"Keep exploring the simulator above — these will click with more practice."}
@@ -1301,11 +1337,11 @@ function QuizChapter({ onComplete }) {
             Retry Quiz
           </button>
           <a href="#" style={{padding:"10px 24px",borderRadius:"var(--r8)",
-            border:"1px solid var(--line2)",background:"var(--bg2)",
-            color:"var(--t2)",textDecoration:"none",fontSize:13,
+            border:"1px solid var(--line2)",background:"linear-gradient(180deg,#171b23,#12161d)",
+            color:"#f1f5f9",textDecoration:"none",fontSize:13,
             display:"flex",alignItems:"center",gap:6,transition:"color .15s"}}
             onMouseEnter={e=>e.currentTarget.style.color="var(--t1)"}
-            onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
+            onMouseLeave={e=>e.currentTarget.style.color="#e2e8f0"}>
             Explore More Concepts →
           </a>
         </div>
@@ -1320,8 +1356,8 @@ function QuizChapter({ onComplete }) {
         <h2 style={{fontSize:"clamp(24px,3.5vw,40px)",fontWeight:800,letterSpacing:"-0.025em"}}>
           Quiz
         </h2>
-        <span style={{padding:"4px 12px",borderRadius:20,background:"var(--bg2)",
-          border:"1px solid var(--line)",fontSize:12,color:"var(--t3)",fontFamily:"var(--mono)"}}>
+        <span style={{padding:"4px 12px",borderRadius:20,background:"linear-gradient(180deg,#171b23,#12161d)",
+          border:"1px solid var(--line)",fontSize:12,color:"#c7d2fe",fontFamily:"var(--mono)"}}>
           {idx+1} / {QS.length}
         </span>
       </div>
@@ -1342,7 +1378,7 @@ function QuizChapter({ onComplete }) {
             const isChosen  = sel===opt;
             const isRight   = opt===q.ans;
             const shown     = !!sel;
-            let bg = "var(--bg2)", border = "var(--line2)", color = "var(--t2)";
+            let bg = "var(--bg2)", border = "var(--line2)", color = "#e2e8f0";
             if(shown&&isRight)           { bg="var(--green2)"; border="rgba(74,222,128,.4)"; color="var(--green)"; }
             else if(shown&&isChosen&&!isRight) { bg="var(--rose2)";  border="rgba(251,113,133,.4)"; color="var(--rose)"; }
             return (
@@ -1360,12 +1396,12 @@ function QuizChapter({ onComplete }) {
 
         {sel&&(
           <div style={{marginTop:16,padding:"13px 16px",borderRadius:"var(--r8)",
-            border:"1px solid var(--line2)",background:"var(--bg2)",
+            border:"1px solid var(--line2)",background:"linear-gradient(180deg,#171b23,#12161d)",
             maxWidth:520,animation:"fadeUp .25s ease both"}}>
-            <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:4}}>
+            <div style={{fontSize:9,color:"#c7d2fe",fontFamily:"var(--mono)",marginBottom:4}}>
               EXPLANATION
             </div>
-            <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.65}}>{q.exp}</p>
+            <p style={{fontSize:16,color:"#eef2ff",lineHeight:1.85,lineHeight:1.65}}>{q.exp}</p>
           </div>
         )}
 

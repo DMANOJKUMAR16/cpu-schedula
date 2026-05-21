@@ -518,6 +518,289 @@ function GanttBar({steps,currentStep}){
   );
 }
 
+
+/* ── GLOSSARY MODAL ─────────────────────────────────────── */
+const GLOSSARY_TERMS = [
+  {
+    term:"Process",
+    color:"#f97316",
+    short:"A program in execution.",
+    detail:"A process is an active instance of a program. It has its own memory space, program counter, and CPU registers. The OS manages multiple processes simultaneously, switching between them so quickly it feels like parallelism.",
+  },
+  {
+    term:"Burst Time",
+    color:"#60a5fa",
+    short:"CPU time a process needs to finish.",
+    detail:"The total amount of time a process needs to execute on the CPU from start to completion. A short burst means the task finishes quickly. Algorithms like SJF use burst time directly to decide scheduling order.",
+  },
+  {
+    term:"Arrival Time",
+    color:"#2dd4bf",
+    short:"When a process enters the ready queue.",
+    detail:"The exact moment a process becomes available for scheduling. Processes that arrive later cannot be scheduled before they arrive, even if they have a short burst time. FCFS sorts purely by this value.",
+  },
+  {
+    term:"Ready Queue",
+    color:"#c084fc",
+    short:"Processes waiting for their CPU turn.",
+    detail:"A queue maintained by the OS holding all processes that are loaded in memory and ready to run, but waiting for the CPU to become free. Different algorithms sort or manage this queue differently.",
+  },
+  {
+    term:"Wait Time",
+    color:"#fbbf24",
+    short:"Time spent waiting before execution.",
+    detail:"The total time a process spends sitting in the ready queue before it first gets to run on the CPU. Minimising average wait time across all processes is a primary goal of scheduling algorithms.",
+  },
+  {
+    term:"Turnaround Time",
+    color:"#4ade80",
+    short:"Total time from arrival to completion.",
+    detail:"The total elapsed time from when a process arrives in the system to when it fully completes. Turnaround = Wait Time + Burst Time. It measures the overall experience of a process through the system.",
+  },
+  {
+    term:"Preemption",
+    color:"#fb7185",
+    short:"Forcibly interrupting a running process.",
+    detail:"A preemptive scheduler can stop a currently running process mid-execution and switch to another one. Round Robin is preemptive — it forces a context switch after each quantum. FCFS and SJF (non-preemptive) let a process finish once started.",
+  },
+  {
+    term:"Context Switch",
+    color:"#a78bfa",
+    short:"Saving and restoring process state.",
+    detail:"When the CPU switches from one process to another, it must save the current process's state (registers, program counter) and restore the next process's saved state. This has a small overhead cost each time it occurs.",
+  },
+];
+
+function GlossaryModal({onClose}){
+  const [active,setActive]=useState(0);
+  const term=GLOSSARY_TERMS[active];
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.88)",zIndex:1000,
+      display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)"}}
+      onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:"var(--bg2)",border:"1px solid var(--line2)",borderRadius:20,
+        width:740,maxWidth:"95vw",overflow:"hidden",animation:"popIn .28s ease both",
+        boxShadow:"0 28px 80px rgba(0,0,0,.8)"}}>
+
+        {/* header */}
+        <div style={{padding:"22px 28px 18px",borderBottom:"1px solid var(--line)",
+          display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontSize:20,fontWeight:800,color:"var(--t1)"}}>📖 Glossary & Key Terms</div>
+            <div style={{fontSize:13,color:"var(--t3)",marginTop:3}}>Click any term to read its full explanation</div>
+          </div>
+          <button onClick={onClose}
+            style={{width:32,height:32,borderRadius:8,background:"var(--bg3)",
+              color:"var(--t2)",fontSize:18,display:"flex",alignItems:"center",
+              justifyContent:"center",transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="var(--rose2)";e.currentTarget.style.color="var(--rose)";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.color="var(--t2)";}}>×</button>
+        </div>
+
+        <div style={{display:"flex",height:380}}>
+          {/* term list */}
+          <div style={{width:200,borderRight:"1px solid var(--line)",
+            padding:"12px 10px",display:"flex",flexDirection:"column",gap:3,
+            overflowY:"auto",flexShrink:0}}>
+            {GLOSSARY_TERMS.map((g,i)=>(
+              <button key={g.term} onClick={()=>setActive(i)}
+                style={{padding:"9px 12px",borderRadius:9,textAlign:"left",
+                  background:active===i?`${g.color}18`:"transparent",
+                  border:`1px solid ${active===i?g.color+"50":"transparent"}`,
+                  borderLeft:`3px solid ${active===i?g.color:"transparent"}`,
+                  color:active===i?g.color:"var(--t2)",
+                  fontSize:13,fontWeight:active===i?700:400,
+                  transition:"all .15s",cursor:"pointer"}}
+                onMouseEnter={e=>{if(active!==i){e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.color="var(--t1)";}}}
+                onMouseLeave={e=>{if(active!==i){e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--t2)";}}}
+              >{g.term}</button>
+            ))}
+          </div>
+
+          {/* term detail */}
+          <div key={active} style={{flex:1,padding:"28px 32px",animation:"fadeUp .25s ease both",
+            display:"flex",flexDirection:"column",justifyContent:"center"}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:10,marginBottom:16}}>
+              <div style={{width:12,height:12,borderRadius:"50%",background:term.color,
+                boxShadow:`0 0 12px ${term.color}80`}}/>
+              <span style={{fontSize:12,fontWeight:700,fontFamily:"var(--mono)",
+                color:term.color,letterSpacing:".1em"}}>{term.term.toUpperCase()}</span>
+            </div>
+            <h3 style={{fontSize:26,fontWeight:800,color:"var(--t1)",
+              lineHeight:1.25,marginBottom:12}}>{term.short}</h3>
+            <div style={{width:40,height:3,borderRadius:2,background:term.color,marginBottom:18}}/>
+            <p style={{fontSize:15,color:"var(--t2)",lineHeight:1.8,maxWidth:420}}>{term.detail}</p>
+
+            <div style={{marginTop:24,display:"flex",gap:8}}>
+              {active>0&&(
+                <button onClick={()=>setActive(a=>a-1)}
+                  style={{padding:"8px 16px",borderRadius:8,border:"1px solid var(--line2)",
+                    background:"transparent",color:"var(--t2)",fontSize:13,fontWeight:600,
+                    transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.color="var(--t1)";}}>
+                  ← Prev
+                </button>
+              )}
+              {active<GLOSSARY_TERMS.length-1&&(
+                <button onClick={()=>setActive(a=>a+1)}
+                  style={{padding:"8px 16px",borderRadius:8,
+                    background:`${term.color}20`,border:`1px solid ${term.color}50`,
+                    color:term.color,fontSize:13,fontWeight:700,transition:"all .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
+                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  Next →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── THEORY MODAL ───────────────────────────────────────── */
+const THEORY_ALGOS = [
+  {
+    id:"fcfs",label:"FCFS",full:"First Come, First Served",color:"#f97316",icon:"→",
+    tagline:"The simplest scheduler. Whoever arrives first, runs first.",
+    how:"The CPU maintains a queue of incoming processes sorted purely by arrival time. As soon as the CPU is free, the process at the front of the queue gets to run. It runs to completion — no interruptions.",
+    example:"P1 arrives at t=0, P2 at t=1, P3 at t=2. FCFS runs them exactly in that order: P1 → P2 → P3, regardless of how long each takes.",
+    pros:["Zero complexity — trivial to implement","No process ever starves — every arrival eventually runs","Predictable, deterministic execution order"],
+    cons:["Convoy Effect: one long process blocks all short ones behind it","Poor average wait time when burst times vary widely","Not suitable for interactive or time-sensitive systems"],
+    metric:"Avg wait = (0 + (t_P1_end - 1) + (t_P2_end - 2)) / 3 — gets worse with long early jobs.",
+  },
+  {
+    id:"sjf",label:"SJF",full:"Shortest Job First",color:"#60a5fa",icon:"↓",
+    tagline:"Always run the shortest available job next.",
+    how:"At each scheduling decision, the CPU scans all processes currently in the ready queue and picks the one with the smallest burst time. If two processes tie, arrival time breaks the tie. Once running, the process completes without interruption (non-preemptive).",
+    example:"P1(burst=6), P2(burst=2), P3(burst=4) all arrive at t=0. SJF runs: P2(2) → P3(4) → P1(6). Average wait = (0+2+6)/3 = 2.67 vs FCFS avg wait of 4.",
+    pros:["Provably optimal average waiting time among non-preemptive algorithms","Short tasks get fast responses — good for batch workloads","Minimises turnaround time across the process set"],
+    cons:["Starvation: long processes may never run if short ones keep arriving","Requires knowing burst time in advance — often impossible in practice","Poor choice for interactive systems where response time matters equally"],
+    metric:"Minimises Σ(wait_i)/n — this is its strongest theoretical guarantee.",
+  },
+  {
+    id:"rr",label:"Round Robin",full:"Round Robin",color:"#2dd4bf",icon:"↻",
+    tagline:"Every process gets an equal, fair time slice before rotating.",
+    how:"Each process is given a fixed time slice called a quantum. The CPU runs the front process for exactly one quantum. If it hasn't finished, it's moved to the back of the queue. Then the next process gets its quantum. This cycles until all processes complete.",
+    example:"Quantum=2. P1(burst=5), P2(burst=3). Execution: P1(2) → P2(2) → P1(2) → P2(1) → P1(1). Every process makes progress before any one monopolises the CPU.",
+    pros:["Fair: no process waits more than (n-1)×quantum time","Good response time for interactive systems","Prevents starvation completely — every process rotates through"],
+    cons:["High context switch overhead if quantum is too small","Higher turnaround than SJF for CPU-bound workloads","Performance heavily depends on choosing the right quantum size"],
+    metric:"Response time ≤ (n−1)×q. Turnaround is typically higher than SJF.",
+  },
+];
+
+function TheoryModal({onClose}){
+  const [active,setActive]=useState("fcfs");
+  const algo=THEORY_ALGOS.find(a=>a.id===active);
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.9)",zIndex:1000,
+      display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)"}}
+      onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:"var(--bg2)",border:"1px solid var(--line2)",borderRadius:20,
+        width:800,maxWidth:"96vw",overflow:"hidden",animation:"popIn .28s ease both",
+        boxShadow:"0 28px 80px rgba(0,0,0,.85)"}}>
+
+        {/* header */}
+        <div style={{padding:"22px 28px 18px",borderBottom:"1px solid var(--line)",
+          display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontSize:20,fontWeight:800,color:"var(--t1)"}}>🧠 Theory & Algorithms</div>
+            <div style={{fontSize:13,color:"var(--t3)",marginTop:3}}>Understand how each algorithm works, with examples and trade-offs</div>
+          </div>
+          <button onClick={onClose}
+            style={{width:32,height:32,borderRadius:8,background:"var(--bg3)",
+              color:"var(--t2)",fontSize:18,display:"flex",alignItems:"center",
+              justifyContent:"center",transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="var(--rose2)";e.currentTarget.style.color="var(--rose)";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.color="var(--t2)";}}>×</button>
+        </div>
+
+        {/* algo tabs */}
+        <div style={{display:"flex",gap:3,padding:"14px 20px 0",borderBottom:"1px solid var(--line)"}}>
+          {THEORY_ALGOS.map(a=>(
+            <button key={a.id} onClick={()=>setActive(a.id)}
+              style={{padding:"9px 22px",borderRadius:"9px 9px 0 0",fontSize:14,fontWeight:700,
+                background:active===a.id?a.color+"22":"transparent",
+                color:active===a.id?a.color:"var(--t3)",
+                border:`1px solid ${active===a.id?a.color+"55":"transparent"}`,
+                borderBottom:active===a.id?"1px solid transparent":"none",
+                transition:"all .18s",cursor:"pointer"}}>
+              {a.icon} {a.label}
+            </button>
+          ))}
+        </div>
+
+        {/* content */}
+        <div key={active} style={{padding:"28px 32px",animation:"fadeUp .25s ease both",
+          maxHeight:"62vh",overflowY:"auto"}}>
+
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:6}}>
+            <span style={{fontFamily:"var(--mono)",fontSize:22,fontWeight:800,color:algo.color}}>{algo.label}</span>
+            <span style={{fontSize:14,color:"var(--t3)"}}>· {algo.full}</span>
+          </div>
+          <div style={{fontSize:18,fontWeight:700,color:"var(--t1)",marginBottom:14,lineHeight:1.35}}>
+            "{algo.tagline}"
+          </div>
+          <div style={{width:48,height:3,borderRadius:2,background:algo.color,marginBottom:20}}/>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:22}}>
+            <div style={{padding:"18px 20px",borderRadius:12,
+              background:"var(--bg3)",border:"1px solid var(--line)"}}>
+              <div style={{fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",
+                letterSpacing:".1em",fontWeight:700,marginBottom:10}}>HOW IT WORKS</div>
+              <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.75}}>{algo.how}</p>
+            </div>
+            <div style={{padding:"18px 20px",borderRadius:12,
+              background:`${algo.color}0c`,border:`1px solid ${algo.color}30`}}>
+              <div style={{fontSize:11,color:algo.color,fontFamily:"var(--mono)",
+                letterSpacing:".1em",fontWeight:700,marginBottom:10}}>EXAMPLE</div>
+              <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.75}}>{algo.example}</p>
+            </div>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:18}}>
+            <div style={{padding:"16px 18px",borderRadius:10,
+              background:"rgba(74,222,128,.06)",border:"1px solid rgba(74,222,128,.2)"}}>
+              <div style={{fontSize:11,color:"var(--green)",fontFamily:"var(--mono)",
+                letterSpacing:".1em",fontWeight:700,marginBottom:10}}>✓ STRENGTHS</div>
+              {algo.pros.map((p,i)=>(
+                <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:7}}>
+                  <span style={{color:"var(--green)",fontSize:12,marginTop:2,flexShrink:0}}>✓</span>
+                  <span style={{fontSize:13,color:"var(--t2)",lineHeight:1.55}}>{p}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{padding:"16px 18px",borderRadius:10,
+              background:"rgba(251,113,133,.06)",border:"1px solid rgba(251,113,133,.2)"}}>
+              <div style={{fontSize:11,color:"var(--rose)",fontFamily:"var(--mono)",
+                letterSpacing:".1em",fontWeight:700,marginBottom:10}}>✗ LIMITATIONS</div>
+              {algo.cons.map((c,i)=>(
+                <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:7}}>
+                  <span style={{color:"var(--rose)",fontSize:12,marginTop:2,flexShrink:0}}>✗</span>
+                  <span style={{fontSize:13,color:"var(--t2)",lineHeight:1.55}}>{c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{padding:"14px 18px",borderRadius:10,
+            background:"var(--bg3)",border:"1px solid var(--line)",
+            display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:18}}>📊</span>
+            <div>
+              <div style={{fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",
+                letterSpacing:".08em",fontWeight:700,marginBottom:4}}>KEY METRIC</div>
+              <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,fontFamily:"var(--mono)"}}>{algo.metric}</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════
    MAIN APP
 ════════════════════════════════════════════════════════════ */
@@ -532,6 +815,8 @@ export default function App(){
   const [showEditor,setEditor]  = useState(false);
   const [showCompare,setCompare]= useState(false);
   const [ytiTopic,setYTI]       = useState(null);
+  const [showGlossary,setShowGlossary] = useState(false);
+  const [showTheory,setShowTheory]     = useState(false);
   const tickRef                 = useRef(null);
 
   const steps=algo==="fcfs"?runFCFS(procs):algo==="sjf"?runSJF(procs):runRR(procs,quantum);
@@ -584,6 +869,8 @@ export default function App(){
       {showEditor&&<ProcessEditor procs={procs} onSave={p=>{setProcs(p);setEditor(false);}} onClose={()=>setEditor(false)}/>}
       {showCompare&&<CompareModal procs={procs} onClose={()=>setCompare(false)}/>}
       {ytiTopic&&<YTIOverlay topic={ytiTopic} onClose={()=>setYTI(null)}/>}
+      {showGlossary&&<GlossaryModal onClose={()=>setShowGlossary(false)}/>}
+      {showTheory&&<TheoryModal onClose={()=>setShowTheory(false)}/>}
 
       <div style={{height:"100%",display:"flex",flexDirection:"column",overflow:"hidden"}}>
 
@@ -915,30 +1202,28 @@ export default function App(){
               </div>
               <GanttBar steps={steps} currentStep={step}/>
 
-            {/* glossary */}
-            <div style={{flexShrink:0,paddingBottom:8}}>
-              <div style={{fontSize:12,fontWeight:800,color:"var(--t1)",
-                letterSpacing:".14em",fontFamily:"var(--mono)",marginBottom:12,
-                display:"flex",alignItems:"center",gap:8}}>
-                <span>GLOSSARY</span>
-                <div style={{flex:1,height:1,background:"var(--line)"}}/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                {[
-                  {term:"Burst Time",    def:"Total CPU time a process needs to complete."},
-                  {term:"Arrival Time",  def:"When the process enters the ready queue."},
-                  {term:"Wait Time",     def:"Time spent in queue before execution starts."},
-                  {term:"Turnaround",    def:"Total time from arrival to full completion."},
-                  {term:"Preemption",    def:"Interrupting a running process mid-execution."},
-                  {term:"Context Switch",def:"CPU saves one process state and loads another."},
-                ].map(g=>(
-                  <div key={g.term} style={{padding:"10px 12px",borderRadius:9,
-                    background:"var(--bg2)",border:"1px solid var(--line)"}}>
-                    <div style={{fontSize:13,fontWeight:800,color:"var(--t1)",marginBottom:3}}>{g.term}</div>
-                    <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.5}}>{g.def}</div>
-                  </div>
-                ))}
-              </div>
+            {/* action buttons row */}
+            <div style={{flexShrink:0,display:"flex",gap:10}}>
+              <button onClick={()=>setShowGlossary(true)}
+                style={{flex:1,padding:"11px 0",borderRadius:10,
+                  border:"1.5px solid var(--line2)",background:"var(--bg2)",
+                  color:"var(--t1)",fontSize:14,fontWeight:700,
+                  display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                  transition:"all .18s",cursor:"pointer"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.borderColor="rgba(255,255,255,.22)";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="var(--bg2)";e.currentTarget.style.borderColor="var(--line2)";}}>
+                <span style={{fontSize:16}}>📖</span> Glossary & Terms
+              </button>
+              <button onClick={()=>setShowTheory(true)}
+                style={{flex:1,padding:"11px 0",borderRadius:10,
+                  border:"1.5px solid var(--line2)",background:"var(--bg2)",
+                  color:"var(--t1)",fontSize:14,fontWeight:700,
+                  display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                  transition:"all .18s",cursor:"pointer"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.borderColor="rgba(255,255,255,.22)";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="var(--bg2)";e.currentTarget.style.borderColor="var(--line2)";}}>
+                <span style={{fontSize:16}}>🧠</span> Theory & Algorithms
+              </button>
             </div>
             </div>
           </div>
@@ -946,7 +1231,7 @@ export default function App(){
           {/* ── RIGHT PANEL ─────────────────────────────── */}
           <div style={{width:"var(--right)",borderLeft:"1px solid var(--line)",
             background:"var(--bg1)",display:"flex",flexDirection:"column",
-            padding:"18px 16px",gap:16,flexShrink:0,overflowY:"hidden"}}>
+            padding:"18px 16px",gap:16,flexShrink:0,overflowY:"auto"}}>
 
             {/* execution stats */}
             <div>

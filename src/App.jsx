@@ -817,6 +817,7 @@ export default function App(){
   const [ytiTopic,setYTI]       = useState(null);
   const [showGlossary,setShowGlossary] = useState(false);
   const [showTheory,setShowTheory]     = useState(false);
+  const [showExplore,setShowExplore]   = useState(false);
   const tickRef                 = useRef(null);
 
   const steps=algo==="fcfs"?runFCFS(procs):algo==="sjf"?runSJF(procs):runRR(procs,quantum);
@@ -919,7 +920,7 @@ export default function App(){
             </div>
           )}
 
-          <div style={{marginLeft:"auto",display:"flex",gap:9}}>
+          <div style={{marginLeft:"auto",display:"flex",gap:9,alignItems:"center"}}>
             <button onClick={()=>setCompare(true)}
               style={{padding:"7px 16px",borderRadius:9,fontSize:14,fontWeight:500,
                 border:"1px solid var(--line2)",color:"var(--t1)",background:"var(--bg2)",transition:"all .15s"}}
@@ -934,6 +935,52 @@ export default function App(){
               onMouseLeave={e=>e.currentTarget.style.background="var(--bg2)"}>
               ? Guide
             </button>
+            {/* Explore More button + dropdown */}
+            <div style={{position:"relative"}}>
+              <button onClick={()=>setShowExplore(v=>!v)}
+                style={{padding:"7px 16px",borderRadius:9,fontSize:14,fontWeight:700,
+                  border:`1px solid ${showExplore?"var(--orange)":"var(--orange3)"}`,
+                  color:"var(--orange)",background:showExplore?"var(--orange2)":"rgba(249,115,22,.08)",
+                  transition:"all .18s",display:"flex",alignItems:"center",gap:6}}
+                onMouseEnter={e=>{e.currentTarget.style.background="var(--orange2)";e.currentTarget.style.borderColor="var(--orange)";}}
+                onMouseLeave={e=>{if(!showExplore){e.currentTarget.style.background="rgba(249,115,22,.08)";e.currentTarget.style.borderColor="var(--orange3)";}}}>
+                🧭 Explore More
+                <span style={{fontSize:11,transform:showExplore?"rotate(180deg)":"rotate(0deg)",
+                  transition:"transform .2s",display:"inline-block"}}>▾</span>
+              </button>
+              {showExplore&&(
+                <div style={{
+                  position:"absolute",top:"calc(100% + 8px)",right:0,
+                  background:"var(--bg2)",border:"1px solid var(--orange3)",
+                  borderRadius:12,padding:"8px",width:220,zIndex:500,
+                  boxShadow:"0 16px 40px rgba(0,0,0,.7)",animation:"tooltipIn .18s ease both"}}
+                  onMouseLeave={()=>setShowExplore(false)}>
+                  <div style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",
+                    letterSpacing:".1em",padding:"4px 8px 8px",fontWeight:700}}>
+                    OS LEARNING MODULES
+                  </div>
+                  {[
+                    {label:"Memory Management", icon:"🧠"},
+                    {label:"Process Sync",       icon:"🔄"},
+                    {label:"Deadlocks",          icon:"🔒"},
+                    {label:"Virtual Memory",     icon:"💾"},
+                  ].map(item=>(
+                    <button key={item.label}
+                      onClick={()=>{setShowExplore(false);setYTI(item.label);}}
+                      style={{display:"flex",alignItems:"center",gap:10,width:"100%",
+                        padding:"9px 12px",borderRadius:8,border:"none",background:"transparent",
+                        color:"var(--t2)",fontSize:13,fontWeight:500,textAlign:"left",
+                        cursor:"pointer",transition:"all .15s"}}
+                      onMouseEnter={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.color="var(--orange)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--t2)";}}>
+                      <span style={{fontSize:16}}>{item.icon}</span>
+                      <span>{item.label}</span>
+                      <span style={{marginLeft:"auto",fontSize:11,color:"var(--t3)"}}>›</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1027,16 +1074,30 @@ export default function App(){
                   {done?"↺  Restart":playing?"⏸  Pause Simulation":"▶  Start Simulation"}
                 </button>
                 <button
+                  onClick={()=>{if(step>-1&&!playing)setStep(v=>v-1);}}
+                  disabled={step<0||playing}
+                  title="Step backward"
+                  style={{padding:"14px 16px",borderRadius:11,
+                    border:"1.5px solid var(--line2)",background:"var(--bg3)",
+                    color:step<0||playing?"var(--t3)":"var(--t1)",
+                    fontSize:15,fontWeight:600,transition:"all .18s",
+                    opacity:step<0||playing?.35:1}}
+                  onMouseEnter={e=>{if(step>-1&&!playing)e.currentTarget.style.background="var(--bg4)";}}
+                  onMouseLeave={e=>e.currentTarget.style.background="var(--bg3)"}>
+                  ←
+                </button>
+                <button
                   onClick={()=>{if(!done&&!playing)setStep(v=>Math.min(v+1,steps.length-1));}}
                   disabled={done||playing}
-                  style={{padding:"14px 24px",borderRadius:11,
+                  title="Step forward"
+                  style={{padding:"14px 16px",borderRadius:11,
                     border:"1.5px solid var(--line2)",background:"var(--bg3)",
                     color:done||playing?"var(--t3)":"var(--t1)",
                     fontSize:15,fontWeight:600,transition:"all .18s",
                     opacity:done||playing?.4:1}}
                   onMouseEnter={e=>{if(!done&&!playing)e.currentTarget.style.background="var(--bg4)";}}
                   onMouseLeave={e=>e.currentTarget.style.background="var(--bg3)"}>
-                  Step →
+                  →
                 </button>
                 <button onClick={reset}
                   style={{padding:"14px 16px",borderRadius:11,border:"1.5px solid var(--line)",
@@ -1231,50 +1292,107 @@ export default function App(){
           {/* ── RIGHT PANEL ─────────────────────────────── */}
           <div style={{width:"var(--right)",borderLeft:"1px solid var(--line)",
             background:"var(--bg1)",display:"flex",flexDirection:"column",
-            padding:"18px 16px",gap:16,flexShrink:0,overflowY:"auto"}}>
+            padding:"18px 16px",gap:0,flexShrink:0,overflowY:"hidden"}}>
 
-            {/* execution stats */}
-            <div>
-              <SH>EXECUTION STATS</SH>
+            {/* ── KERNEL OUTPUT ── */}
+            <div style={{display:"flex",flexDirection:"column",flex:"1 1 0",minHeight:0,marginBottom:14}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <span style={{fontSize:12,fontWeight:800,color:"var(--t1)",
+                  letterSpacing:".14em",textTransform:"uppercase",fontFamily:"var(--mono)"}}>
+                  Kernel Log
+                </span>
+                <div style={{display:"flex",alignItems:"center",gap:5}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",
+                    background:cur?"var(--green)":"var(--t3)",
+                    animation:cur?"pulse 1.5s ease infinite":"none"}}/>
+                  <span style={{fontSize:10,color:cur?"var(--green)":"var(--t3)",
+                    fontFamily:"var(--mono)",fontWeight:600}}>
+                    {cur?"RUNNING":"IDLE"}
+                  </span>
+                </div>
+              </div>
+              <div style={{flex:1,overflowY:"auto",background:"var(--bg)",
+                borderRadius:10,border:"1px solid var(--line2)",
+                padding:"10px 12px",fontFamily:"var(--mono)",fontSize:12,
+                display:"flex",flexDirection:"column",gap:4}}>
+                {(()=>{
+                  if(step<0) return(
+                    <div style={{color:"var(--t3)",textAlign:"center",marginTop:20,fontSize:12}}>
+                      <div style={{fontSize:22,marginBottom:8}}>⬡</div>
+                      Kernel waiting...<br/>Start simulation to see OS-level events
+                    </div>
+                  );
+                  const logs=[];
+                  logs.push({type:"boot",t:0,msg:`Scheduler initialised · Algorithm: ${algo.toUpperCase()}${algo==="rr"?" (quantum="+quantum+")":""}`,color:"var(--t3)"});
+                  procs.forEach(p=>{
+                    logs.push({type:"arrive",t:p.arrival,msg:`proc ${p.id} → READY QUEUE (burst=${p.burst})`,color:"var(--t2)"});
+                  });
+                  steps.slice(0,step+1).forEach((s,i)=>{
+                    const prev=i>0?steps[i-1]:null;
+                    if(prev&&prev.pid!==s.pid){
+                      logs.push({type:"switch",t:s.start,msg:`context switch: ${prev.pid} ⟶ ${s.pid}`,color:"var(--yellow)"});
+                    }
+                    logs.push({type:"dispatch",t:s.start,msg:`dispatch ${s.pid} → CPU · slice=${s.end-s.start}u`,color:s.color.bg});
+                    const totalExec=steps.slice(0,i+1).filter(x=>x.pid===s.pid).reduce((a,x)=>a+(x.end-x.start),0);
+                    const p=procs.find(x=>x.id===s.pid);
+                    if(p&&totalExec>=p.burst){
+                      logs.push({type:"done",t:s.end,msg:`${s.pid} TERMINATED · turnaround=${s.end-p.arrival}`,color:"var(--green)"});
+                    }
+                  });
+                  const sortedLogs=[...logs].sort((a,b)=>a.t-b.t||["boot","arrive","switch","dispatch","done"].indexOf(a.type)-["boot","arrive","switch","dispatch","done"].indexOf(b.type));
+                  const ICONS={boot:"⬡",arrive:"↓",switch:"⟳",dispatch:"▶",done:"✓"};
+                  return sortedLogs.map((log,i)=>(
+                    <div key={i} style={{
+                      display:"flex",gap:8,alignItems:"flex-start",
+                      padding:"5px 7px",borderRadius:6,
+                      background:log.type==="dispatch"?`${log.color}10`:"transparent",
+                      animation:i===sortedLogs.length-1?"slideUp .2s ease both":"none",
+                    }}>
+                      <span style={{color:log.color,flexShrink:0,fontSize:11,marginTop:1}}>{ICONS[log.type]}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <span style={{color:"var(--t3)",fontSize:10,fontFamily:"var(--mono)"}}>t={log.t} </span>
+                        <span style={{color:log.color,fontSize:11,lineHeight:1.5,wordBreak:"break-all"}}>{log.msg}</span>
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+
+            <div style={{height:1,background:"var(--line)",marginBottom:14}}/>
+
+            {/* ── EXECUTION STATS ── */}
+            <div style={{flexShrink:0}}>
+              <div style={{fontSize:12,fontWeight:800,color:"var(--t1)",
+                letterSpacing:".14em",textTransform:"uppercase",
+                fontFamily:"var(--mono)",marginBottom:10}}>
+                Execution Stats
+              </div>
               {statsData.map(p=>(
                 <div key={p.id} style={{
-                  display:"flex",justifyContent:"space-between",alignItems:"center",
-                  padding:"10px 12px",borderRadius:10,marginBottom:7,
+                  display:"flex",alignItems:"center",
+                  padding:"8px 10px",borderRadius:9,marginBottom:6,
                   background:p.isDone2?"var(--green2)":"var(--bg2)",
                   border:`1px solid ${p.isDone2?"rgba(74,222,128,.3)":"var(--line)"}`,
-                  transition:"all .4s"}}>
-                  <span style={{fontFamily:"var(--mono)",fontSize:15,fontWeight:800,color:p.color.bg}}>{p.id}</span>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>
-                      wait: <span style={{color:p.isDone2?"var(--t1)":"var(--t3)",fontWeight:800,fontFamily:"var(--mono)"}}>{p.isDone2?p.wait:"—"}</span>
+                  transition:"all .4s",gap:8}}>
+                  <div style={{width:10,height:10,borderRadius:"50%",
+                    background:p.color.bg,flexShrink:0,
+                    boxShadow:p.isDone2?`0 0 8px ${p.color.glow}`:"none"}}/>
+                  <span style={{fontFamily:"var(--mono)",fontSize:14,fontWeight:800,
+                    color:p.color.bg,flex:1}}>{p.id}</span>
+                  <div style={{display:"flex",gap:10,textAlign:"right"}}>
+                    <div>
+                      <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",fontWeight:700}}>WAIT</div>
+                      <div style={{fontSize:13,fontWeight:800,fontFamily:"var(--mono)",
+                        color:p.isDone2?"var(--t1)":"var(--t3)"}}>{p.isDone2?p.wait:"—"}</div>
                     </div>
-                    <div style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>
-                      turn: <span style={{color:p.isDone2?"var(--t1)":"var(--t3)",fontWeight:800,fontFamily:"var(--mono)"}}>{p.isDone2?p.ta:"—"}</span>
+                    <div>
+                      <div style={{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",fontWeight:700}}>TURN</div>
+                      <div style={{fontSize:13,fontWeight:800,fontFamily:"var(--mono)",
+                        color:p.isDone2?"var(--t1)":"var(--t3)"}}>{p.isDone2?p.ta:"—"}</div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* explore more */}
-            <div style={{padding:"14px",borderRadius:11,
-              background:"var(--bg2)",border:"1px solid var(--line)"}}>
-              <div style={{fontSize:12,fontWeight:800,color:"var(--t1)",
-                marginBottom:10,letterSpacing:".08em",fontFamily:"var(--mono)"}}>
-                EXPLORE MORE
-              </div>
-              {["Memory Management","Process Sync","Deadlocks","Virtual Memory"].map(t=>(
-                <button key={t} onClick={()=>setYTI(t)}
-                  style={{display:"flex",alignItems:"center",justifyContent:"space-between",
-                    width:"100%",padding:"9px 10px",borderRadius:8,
-                    background:"transparent",border:"none",
-                    color:"var(--t2)",fontSize:13,fontWeight:500,
-                    textAlign:"left",transition:"all .15s",marginBottom:4,cursor:"pointer"}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.color="var(--orange)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--t2)";}}>
-                  <span>→ {t}</span>
-                  <span style={{fontSize:11,color:"var(--t3)"}}>›</span>
-                </button>
               ))}
             </div>
           </div>

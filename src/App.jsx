@@ -44,6 +44,10 @@ a{color:inherit;text-decoration:none}
 @keyframes trackGlow{0%,100%{opacity:.4}50%{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes completePop{0%{transform:scale(0)}65%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes hungerPulse{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes quizReveal{0%{opacity:0;transform:scale(.88) translateY(12px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes correctFlash{0%{background:rgba(74,222,128,.0)}50%{background:rgba(74,222,128,.25)}100%{background:rgba(74,222,128,.12)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 @keyframes ytiSlide{from{opacity:0;transform:scale(.96) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 `;
 
@@ -56,10 +60,10 @@ const PC=[
 ];
 
 const DEFAULT_PROCS=[
-  {id:"P1",arrival:0,burst:5,color:PC[0]},
-  {id:"P2",arrival:1,burst:3,color:PC[1]},
-  {id:"P3",arrival:2,burst:8,color:PC[2]},
-  {id:"P4",arrival:3,burst:2,color:PC[3]},
+  {id:"P1",arrival:0,burst:5,priority:3,color:PC[0]},
+  {id:"P2",arrival:1,burst:3,priority:1,color:PC[1]},
+  {id:"P3",arrival:2,burst:8,priority:4,color:PC[2]},
+  {id:"P4",arrival:3,burst:2,priority:2,color:PC[3]},
 ];
 
 /* ── ALGORITHMS ─────────────────────────────────────────── */
@@ -105,6 +109,22 @@ function runRR(procs,q){
     t+=exec;p.rem-=exec;
     enq(t);
     if(p.rem>0)queue.push(p);
+  }
+  return steps;
+}
+
+function runPRIORITY(procs){
+  const ps=procs.map(p=>({...p,done:false}));
+  const steps=[];let t=0;let g=0;
+  while(ps.some(p=>!p.done)&&g++<300){
+    const av=ps.filter(p=>!p.done&&p.arrival<=t);
+    if(!av.length){t++;continue;}
+    const pick=av.reduce((a,b)=>(a.priority||99)<(b.priority||99)?a:b);
+    steps.push({pid:pick.id,start:t,end:t+pick.burst,color:pick.color,
+      why:`${pick.id} runs next — it has priority ${pick.priority||"?"}, highest among ${av.length} ready process${av.length>1?"es":""}. Lower number = higher priority.`,
+      detail:`Priority Scheduling: Each process has a priority number. Lower value = higher urgency. The CPU always picks the highest-priority ready process. Risk: low-priority processes may starve if high-priority ones keep arriving.`});
+    t+=pick.burst;
+    ps.find(p=>p.id===pick.id).done=true;
   }
   return steps;
 }
@@ -275,20 +295,20 @@ function ProcessEditor({procs,onSave,onClose}){
             onMouseEnter={e=>{e.currentTarget.style.background="var(--rose2)";e.currentTarget.style.color="var(--rose)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="var(--bg3)";e.currentTarget.style.color="var(--t2)";}}>×</button>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"36px 1fr 1fr 1fr 34px",gap:"9px 10px",alignItems:"center",marginBottom:14}}>
-          {["","Process","Arrival","Burst",""].map((h,i)=>(
+        <div style={{display:"grid",gridTemplateColumns:"36px 1fr 1fr 1fr 1fr 34px",gap:"9px 10px",alignItems:"center",marginBottom:14}}>
+          {["","Process","Arrival","Burst","Priority",""].map((h,i)=>(
             <div key={i} style={{fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",letterSpacing:".08em",paddingBottom:4,fontWeight:700}}>{h}</div>
           ))}
           {local.map((p,i)=>[
             <div key={`dot${i}`} style={{width:13,height:13,borderRadius:"50%",background:p.color.bg,boxShadow:`0 0 10px ${p.color.glow}`,justifySelf:"center"}}/>,
             <div key={`id${i}`} style={{fontFamily:"var(--mono)",fontSize:16,fontWeight:700,color:p.color.bg}}>{p.id}</div>,
-            ...["arrival","burst"].map(field=>(
-              <input key={`${field}${i}`} type="number" min="0" max="20" value={p[field]}
+            ...["arrival","burst","priority"].map(field=>(
+              <input key={`${field}${i}`} type="number" min={field==="priority"?1:0} max={field==="priority"?5:20} value={p[field]??1}
                 onChange={e=>update(i,field,e.target.value)}
                 style={{background:"var(--bg3)",border:"1px solid var(--line2)",borderRadius:8,
                   color:"var(--t1)",fontFamily:"var(--mono)",fontSize:15,fontWeight:600,
                   padding:"8px 10px",outline:"none",width:"100%",transition:"border .15s"}}
-                onFocus={e=>e.target.style.borderColor="var(--orange)"}
+                onFocus={e=>e.target.style.borderColor=field==="priority"?"var(--purple)":"var(--orange)"}
                 onBlur={e=>e.target.style.borderColor="var(--line2)"}/>
             )),
             <button key={`del${i}`} onClick={()=>removeProc(i)}
@@ -299,6 +319,10 @@ function ProcessEditor({procs,onSave,onClose}){
               onMouseEnter={e=>{if(local.length>2)e.currentTarget.style.background="rgba(251,113,133,.3)";}}
               onMouseLeave={e=>e.currentTarget.style.background="var(--rose2)"}>×</button>,
           ])}
+        </div>
+        <div style={{fontSize:11,color:"var(--t3)",marginBottom:14,padding:"6px 8px",borderRadius:6,
+          background:"var(--bg3)",border:"1px solid var(--line)"}}>
+          💡 Priority: 1 = highest urgency, 5 = lowest. Used only in Priority Scheduling mode.
         </div>
         {local.length<5&&(
           <button onClick={addProc}
@@ -334,9 +358,10 @@ function ProcessEditor({procs,onSave,onClose}){
 /* ── COMPARE MODAL ───────────────────────────────────────── */
 function CompareModal({procs,onClose}){
   const algos=[
-    {key:"fcfs",label:"FCFS",     color:"#f97316",steps:runFCFS(procs)},
-    {key:"sjf", label:"SJF",      color:"#60a5fa",steps:runSJF(procs)},
-    {key:"rr2", label:"RR (q=2)", color:"#2dd4bf",steps:runRR(procs,2)},
+    {key:"fcfs",label:"FCFS",       color:"#f97316",steps:runFCFS(procs)},
+    {key:"sjf", label:"SJF",        color:"#60a5fa",steps:runSJF(procs)},
+    {key:"rr2", label:"RR (q=2)",   color:"#2dd4bf",steps:runRR(procs,2)},
+    {key:"pri", label:"Priority",   color:"#c084fc",steps:runPRIORITY(procs)},
   ];
   const maxMake=Math.max(...algos.map(a=>Math.max(...a.steps.map(s=>s.end))));
   const stats=algos.map(a=>{
@@ -411,18 +436,117 @@ function CompareModal({procs,onClose}){
 }
 
 /* ── WALKTHROUGH ─────────────────────────────────────────── */
+
+/* ── QUIZ OVERLAY ────────────────────────────────────────── */
+function QuizOverlay({steps,step,onCorrect,onSkip}){
+  const [selected,setSelected]=useState(null);
+  const nextStep=steps[step+1];
+  if(!nextStep) return null;
+  const correct=nextStep.pid;
+  // build options: correct + up to 2 distractors
+  const allPids=[...new Set(steps.map(s=>s.pid))];
+  const distractors=allPids.filter(p=>p!==correct).sort(()=>Math.random()-.5).slice(0,2);
+  const options=[correct,...distractors].sort(()=>Math.random()-.5);
+  const answered=!!selected;
+  const isCorrect=selected===correct;
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.82)",zIndex:800,
+      display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)"}}
+      onClick={e=>{if(e.target===e.currentTarget&&answered)onCorrect();}}>
+      <div style={{background:"var(--bg2)",border:"1px solid var(--line2)",borderRadius:18,
+        padding:"32px 36px",width:420,animation:"quizReveal .28s ease both",
+        boxShadow:"0 24px 60px rgba(0,0,0,.8)"}}>
+
+        <div style={{fontSize:11,color:"var(--purple)",fontFamily:"var(--mono)",
+          letterSpacing:".12em",fontWeight:700,marginBottom:12}}>
+          🎯 QUIZ MODE · STEP {step+2}
+        </div>
+
+        <div style={{fontSize:19,fontWeight:800,color:"var(--t1)",
+          lineHeight:1.3,marginBottom:22}}>
+          Which process runs next?
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
+          {options.map(opt=>{
+            const isSelected=selected===opt;
+            const showResult=answered;
+            const isRight=opt===correct;
+            let bg="var(--bg3)",border="var(--line2)",col="var(--t1)";
+            if(showResult&&isRight){bg="rgba(74,222,128,.14)";border="rgba(74,222,128,.5)";col="var(--green)";}
+            else if(showResult&&isSelected&&!isRight){bg="rgba(251,113,133,.14)";border="rgba(251,113,133,.5)";col="var(--rose)";}
+            return(
+              <button key={opt} onClick={()=>{if(!answered)setSelected(opt);}}
+                style={{padding:"13px 18px",borderRadius:10,border:`1.5px solid ${border}`,
+                  background:bg,color:col,cursor:answered?"default":"pointer",
+                  fontSize:15,fontWeight:600,textAlign:"left",fontFamily:"var(--sans)",
+                  transition:"all .2s",
+                  animation:showResult&&isRight?"correctFlash .4s ease":showResult&&isSelected&&!isRight?"wrongShake .3s ease":""}}
+                onMouseEnter={e=>{if(!answered)e.currentTarget.style.background="var(--bg4)";}}
+                onMouseLeave={e=>{if(!answered)e.currentTarget.style.background=bg;}}>
+                {showResult&&isRight&&"✓ "}{showResult&&isSelected&&!isRight&&"✗ "}{opt}
+              </button>
+            );
+          })}
+        </div>
+
+        {answered&&(
+          <div style={{padding:"12px 16px",borderRadius:9,marginBottom:16,
+            background:isCorrect?"rgba(74,222,128,.08)":"rgba(251,113,133,.08)",
+            border:`1px solid ${isCorrect?"rgba(74,222,128,.3)":"rgba(251,113,133,.3)"}`}}>
+            <div style={{fontSize:13,fontWeight:700,
+              color:isCorrect?"var(--green)":"var(--rose)",marginBottom:4}}>
+              {isCorrect?"✓ Correct!":"✗ Not quite."}
+            </div>
+            <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>
+              {nextStep.why}
+            </div>
+          </div>
+        )}
+
+        <div style={{display:"flex",gap:8}}>
+          {answered&&(
+            <button onClick={onCorrect}
+              style={{flex:1,padding:"11px",borderRadius:9,background:"var(--orange)",
+                color:"#fff",fontSize:14,fontWeight:700,border:"none",transition:"all .15s"}}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".88"}
+              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              See it happen →
+            </button>
+          )}
+          <button onClick={onSkip}
+            style={{padding:"11px 16px",borderRadius:9,
+              border:"1px solid var(--line2)",background:"transparent",
+              color:"var(--t3)",fontSize:13,transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.color="var(--t1)";}}
+            onMouseLeave={e=>e.currentTarget.style.color="var(--t3)"}>
+            Skip
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const WALK_STEPS=[
   {title:"Welcome to CPU Scheduling Lab",
-   body:"This simulator shows how an OS decides which program runs next. You'll see it happen live — no reading required.",
+   body:"This simulator shows how an OS decides which program runs next. See it live — 4 algorithms, kernel logs, and interactive controls.",
    cta:"Let's Begin"},
   {title:"These coloured blocks are Processes",
-   body:"Each block (P1, P2…) is a program wanting CPU time. They each arrive at a different time and need a different workload done.",
+   body:"Each block (P1, P2…) is a program wanting CPU time. Each has an arrival time, burst time, and priority. Edit them via the ✎ Edit button.",
    cta:"Got it"},
-  {title:"One CPU. Many processes waiting.",
-   body:"The CPU can only run ONE process at a time. A scheduling algorithm decides the order. Watch the arrow — that's a process moving into the CPU.",
-   cta:"Show Me"},
+  {title:"4 Scheduling Algorithms",
+   body:"FCFS, SJF, Round Robin, and Priority Scheduling. Switch between them in the top bar. Compare all 4 at once using ⚖ Compare.",
+   cta:"Nice"},
+  {title:"Quiz Mode — Test Yourself",
+   body:"Toggle Quiz Mode in the controls bar. Before each step, you'll be asked which process runs next. Great for active learning and exam prep.",
+   cta:"Sounds good"},
+  {title:"Starvation & Kernel Log",
+   body:"Watch hunger meters grow on waiting processes — that's starvation visualised. The right panel shows live OS-level kernel events as they happen.",
+   cta:"Got it"},
   {title:"Hit ▶ Start Simulation",
-   body:"The big orange button starts the animation. Every step is explained automatically. You can also step through manually at your own pace.",
+   body:"Press the big orange button to autoplay, or use ← → to step manually. Click any Gantt block to jump to that point in time.",
    cta:"Start Simulating →"},
 ];
 function WalkThrough({onDone}){
@@ -470,7 +594,7 @@ function WalkThrough({onDone}){
 }
 
 /* ── GANTT CHART ─────────────────────────────────────────── */
-function GanttBar({steps,currentStep}){
+function GanttBar({steps,currentStep,onScrub}){
   if(!steps.length)return(
     <div style={{height:50,borderRadius:10,background:"var(--bg3)",border:"1px dashed var(--line2)",
       display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"var(--t3)"}}>
@@ -485,14 +609,19 @@ function GanttBar({steps,currentStep}){
           const filled=i<=currentStep;
           const active=i===currentStep;
           return(
-            <div key={i} style={{
-              width:`${((s.end-s.start)/maxEnd)*100}%`,height:"100%",
-              background:filled?s.color.bg:"rgba(255,255,255,.03)",
-              display:"flex",alignItems:"center",justifyContent:"center",
-              borderRight:"1px solid rgba(0,0,0,.25)",position:"relative",overflow:"hidden",
-              transition:"background .3s",
-              boxShadow:active?`inset 0 0 0 2.5px rgba(255,255,255,.55)`:"none",
-            }}>
+            <div key={i}
+              onClick={()=>onScrub&&onScrub(i)}
+              title={`Jump to step ${i+1}: ${s.pid} (t=${s.start}–${s.end})`}
+              style={{
+                width:`${((s.end-s.start)/maxEnd)*100}%`,height:"100%",
+                background:filled?s.color.bg:"rgba(255,255,255,.03)",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                borderRight:"1px solid rgba(0,0,0,.25)",position:"relative",overflow:"hidden",
+                transition:"background .3s",cursor:"pointer",
+                boxShadow:active?`inset 0 0 0 2.5px rgba(255,255,255,.55)`:"none",
+              }}
+              onMouseEnter={e=>{if(!filled)e.currentTarget.style.background="rgba(255,255,255,.07)";}}
+              onMouseLeave={e=>{if(!filled)e.currentTarget.style.background="rgba(255,255,255,.03)";}}>
               <span style={{fontSize:14,fontWeight:700,color:filled?"#fff":"transparent",
                 fontFamily:"var(--mono)",position:"relative",zIndex:1}}>
                 {filled?s.pid:""}
@@ -818,9 +947,13 @@ export default function App(){
   const [showGlossary,setShowGlossary] = useState(false);
   const [showTheory,setShowTheory]     = useState(false);
   const [showExplore,setShowExplore]   = useState(false);
+  const [quizMode,setQuizMode]         = useState(false);
+  const [quizPending,setQuizPending]   = useState(false);
   const tickRef                 = useRef(null);
+  const kernelRef               = useRef(null);
+  useEffect(()=>{ if(kernelRef.current){ kernelRef.current.scrollTop=kernelRef.current.scrollHeight; } },[step]);
 
-  const steps=algo==="fcfs"?runFCFS(procs):algo==="sjf"?runSJF(procs):runRR(procs,quantum);
+  const steps=algo==="fcfs"?runFCFS(procs):algo==="sjf"?runSJF(procs):algo==="priority"?runPRIORITY(procs):runRR(procs,quantum);
   const cur=steps[step];
   const done=step>=steps.length-1&&step>=0;
 
@@ -831,6 +964,12 @@ export default function App(){
       tickRef.current=setInterval(()=>{
         setStep(v=>{
           if(v>=steps.length-1){setPlay(false);clearInterval(tickRef.current);return v;}
+          if(quizMode){
+            setPlay(false);
+            clearInterval(tickRef.current);
+            setQuizPending(true);
+            return v;
+          }
           return v+1;
         });
       },Math.round(1300/speed));
@@ -839,9 +978,10 @@ export default function App(){
   },[playing,steps.length,speed]);
 
   const ALGO={
-    fcfs:{label:"FCFS",       full:"First Come, First Served",tip:"Runs processes in arrival order. Simple, no priority.",color:"#f97316"},
-    sjf: {label:"SJF",        full:"Shortest Job First",      tip:"Always picks the process needing the least CPU time.",color:"#60a5fa"},
-    rr:  {label:"Round Robin",full:"Round Robin",             tip:"Each process gets a fixed time slice before rotating.",color:"#2dd4bf"},
+    fcfs:    {label:"FCFS",     full:"First Come, First Served",tip:"Runs processes in arrival order. Simple, no priority.",color:"#f97316"},
+    sjf:     {label:"SJF",      full:"Shortest Job First",      tip:"Always picks the process needing the least CPU time.",color:"#60a5fa"},
+    rr:      {label:"Round Robin",full:"Round Robin",           tip:"Each process gets a fixed time slice before rotating.",color:"#2dd4bf"},
+    priority:{label:"Priority", full:"Priority Scheduling",    tip:"Runs the highest-priority process first. 1 = most urgent.",color:"#c084fc"},
   };
   const meta=ALGO[algo];
 
@@ -871,6 +1011,13 @@ export default function App(){
       {showCompare&&<CompareModal procs={procs} onClose={()=>setCompare(false)}/>}
       {ytiTopic&&<YTIOverlay topic={ytiTopic} onClose={()=>setYTI(null)}/>}
       {showGlossary&&<GlossaryModal onClose={()=>setShowGlossary(false)}/>}
+      {quizPending&&quizMode&&(
+        <QuizOverlay
+          steps={steps} step={step}
+          onCorrect={()=>{setQuizPending(false);setStep(v=>Math.min(v+1,steps.length-1));setPlay(true);}}
+          onSkip={()=>{setQuizPending(false);setStep(v=>Math.min(v+1,steps.length-1));setPlay(true);}}
+        />
+      )}
       {showTheory&&<TheoryModal onClose={()=>setShowTheory(false)}/>}
 
       <div style={{height:"100%",display:"flex",flexDirection:"column",overflow:"hidden"}}>
@@ -1008,7 +1155,7 @@ export default function App(){
               <div key={p.id} style={{
                 padding:"12px 14px",borderRadius:12,
                 background:p.isRunning?`${p.color.bg}1c`:p.isDone?"rgba(255,255,255,.02)":"var(--bg2)",
-                border:`1.5px solid ${p.isRunning?p.color.bg+"80":"var(--line)"}`,
+                border:`1.5px solid ${p.isRunning?p.color.bg+"80":p.hungerPct>66?"rgba(251,113,133,.5)":"var(--line)"}`,
                 transition:"all .35s ease",
                 transform:p.isRunning?"translateX(5px)":"translateX(0)",
                 opacity:p.isDone?.32:1,
@@ -1019,12 +1166,44 @@ export default function App(){
                       boxShadow:p.isRunning?`0 0 14px ${p.color.glow}`:"none",transition:"box-shadow .3s"}}/>
                     <span style={{fontFamily:"var(--mono)",fontSize:16,fontWeight:700,
                       color:p.isRunning?p.color.bg:"var(--t1)"}}>{p.id}</span>
+                    {algo==="priority"&&!p.isDone&&(
+                      <span style={{fontSize:10,fontFamily:"var(--mono)",fontWeight:800,
+                        padding:"1px 6px",borderRadius:4,
+                        background:"rgba(192,132,252,.18)",color:"var(--purple)",
+                        border:"1px solid rgba(192,132,252,.35)"}}>
+                        P{p.priority||"?"}
+                      </span>
+                    )}
                   </div>
                   <span style={{fontSize:11,fontWeight:800,fontFamily:"var(--mono)",
-                    color:p.isRunning?"var(--green)":p.isDone?"var(--t3)":"var(--t2)"}}>
-                    {p.isRunning?"▶ EXEC":p.isDone?"✓ DONE":"READY"}
+                    color:p.isRunning?"var(--green)":p.isDone?"var(--t3)":p.hungerPct>66?"var(--rose)":"var(--t2)"}}>
+                    {p.isRunning?"▶ EXEC":p.isDone?"✓ DONE":p.hungerPct>50?"STARVING":"READY"}
                   </span>
                 </div>
+                {/* STARVATION HUNGER METER — full width, prominent */}
+                {!p.isDone&&!p.isRunning&&p.waitSoFar>0&&(
+                  <div style={{marginBottom:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                      <span style={{fontSize:10,color:p.hungerPct>66?"var(--rose)":p.hungerPct>33?"var(--yellow)":"var(--t3)",
+                        fontFamily:"var(--mono)",fontWeight:700}}>
+                        {p.hungerPct>66?"⚠ STARVATION":p.hungerPct>33?"⏳ WAITING":"🟡 QUEUED"}
+                      </span>
+                      <span style={{fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)"}}>
+                        {p.waitSoFar}u waiting
+                      </span>
+                    </div>
+                    <div style={{width:"100%",height:6,borderRadius:3,background:"var(--bg4)",overflow:"hidden"}}>
+                      <div style={{
+                        height:"100%",borderRadius:3,
+                        background:p.hungerPct>66?"var(--rose)":p.hungerPct>33?"var(--yellow)":"var(--teal)",
+                        width:`${p.hungerPct}%`,
+                        transition:"width .5s ease",
+                        animation:p.hungerPct>66?"hungerPulse 1s ease infinite":"none",
+                        boxShadow:p.hungerPct>66?"0 0 8px var(--rose)":"none",
+                      }}/>
+                    </div>
+                  </div>
+                )}
                 <div style={{display:"flex",gap:7}}>
                   {[{l:"ARRIVAL",v:p.arrival},{l:"BURST",v:p.burst}].map(f=>(
                     <div key={f.l} style={{flex:1,textAlign:"center",padding:"6px 0",
@@ -1087,7 +1266,7 @@ export default function App(){
                   ←
                 </button>
                 <button
-                  onClick={()=>{if(!done&&!playing)setStep(v=>Math.min(v+1,steps.length-1));}}
+                  onClick={()=>{if(!done&&!playing){if(quizMode&&step<steps.length-1){setQuizPending(true);}else{setStep(v=>Math.min(v+1,steps.length-1));}}}}
                   disabled={done||playing}
                   title="Step forward"
                   style={{padding:"14px 16px",borderRadius:11,
@@ -1119,6 +1298,19 @@ export default function App(){
                     {s.l}
                   </button>
                 ))}
+                <button onClick={()=>setQuizMode(v=>!v)}
+                  style={{padding:"6px 16px",borderRadius:8,fontSize:13,fontWeight:800,
+                    background:quizMode?"rgba(192,132,252,.25)":"rgba(192,132,252,.08)",
+                    color:quizMode?"var(--purple)":"rgba(192,132,252,.6)",
+                    border:`1.5px solid ${quizMode?"var(--purple)":"rgba(192,132,252,.3)"}`,
+                    transition:"all .18s",display:"flex",alignItems:"center",gap:6,
+                    boxShadow:quizMode?"0 0 14px rgba(192,132,252,.35)":"none",
+                    animation:quizMode?"none":"none"}}
+                  title="Quiz Mode: test yourself before each step"
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(192,132,252,.2)";e.currentTarget.style.borderColor="var(--purple)";e.currentTarget.style.color="var(--purple)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background=quizMode?"rgba(192,132,252,.25)":"rgba(192,132,252,.08)";e.currentTarget.style.borderColor=quizMode?"var(--purple)":"rgba(192,132,252,.3)";e.currentTarget.style.color=quizMode?"var(--purple)":"rgba(192,132,252,.6)";}}>
+                  🎯 {quizMode?"Quiz ON ✓":"Quiz Mode"}
+                </button>
                 {done&&(
                   <div style={{marginLeft:"auto",padding:"5px 16px",borderRadius:8,
                     background:"var(--green2)",border:"1px solid rgba(74,222,128,.35)",
@@ -1143,22 +1335,33 @@ export default function App(){
                   alignItems:"center",flexWrap:"wrap"}}>
                   {procStatus.map(p=>(
                     <div key={p.id} style={{display:"flex",flexDirection:"column",
-                      alignItems:"center",gap:6,
+                      alignItems:"center",gap:5,
                       transform:p.isRunning?"translateX(10px) scale(1.12)":"scale(1)",
                       opacity:p.isDone&&!p.isRunning?.15:1,
                       transition:"all .45s cubic-bezier(.34,1.56,.64,1)"}}>
-                      <div style={{
-                        width:50,height:50,borderRadius:12,background:p.color.bg,
-                        display:"flex",alignItems:"center",justifyContent:"center",
-                        fontSize:15,fontWeight:800,color:p.color.t,
-                        boxShadow:p.isRunning?`0 0 0 3px ${p.color.glow},0 0 26px ${p.color.glow}`:"none",
-                        border:`2px solid ${p.isRunning?"rgba(255,255,255,.7)":"transparent"}`,
-                        transition:"all .35s ease"}}>
-                        {p.id}
+                      <div style={{position:"relative"}}>
+                        <div style={{
+                          width:50,height:50,borderRadius:12,background:p.color.bg,
+                          display:"flex",alignItems:"center",justifyContent:"center",
+                          fontSize:15,fontWeight:800,color:p.color.t,
+                          boxShadow:p.isRunning?`0 0 0 3px ${p.color.glow},0 0 26px ${p.color.glow}`:"none",
+                          border:`2px solid ${p.isRunning?"rgba(255,255,255,.7)":p.hungerPct>50?"rgba(251,113,133,.6)":"transparent"}`,
+                          transition:"all .35s ease"}}>
+                          {p.id}
+                        </div>
+                        {algo==="priority"&&!p.isDone&&(
+                          <div style={{position:"absolute",top:-6,right:-6,
+                            width:18,height:18,borderRadius:"50%",
+                            background:"var(--purple)",border:"1.5px solid var(--bg2)",
+                            display:"flex",alignItems:"center",justifyContent:"center",
+                            fontSize:9,fontWeight:800,color:"#fff"}}>
+                            {p.priority||"?"}
+                          </div>
+                        )}
                       </div>
                       <span style={{fontSize:11,fontFamily:"var(--mono)",fontWeight:700,
-                        color:p.isRunning?"var(--green)":p.isDone?"var(--t3)":"var(--t2)"}}>
-                        {p.isRunning?"▶ exec":p.isDone?"done":`b=${p.burst}`}
+                        color:p.isRunning?"var(--green)":p.isDone?"var(--t3)":p.hungerPct>66?"var(--rose)":"var(--t2)"}}>
+                        {p.isRunning?"▶ exec":p.isDone?"done":p.waitSoFar>0?`wait:${p.waitSoFar}`:`b=${p.burst}`}
                       </span>
                     </div>
                   ))}
@@ -1261,7 +1464,7 @@ export default function App(){
                 letterSpacing:".12em",fontFamily:"var(--mono)",marginBottom:9}}>
                 <Tip label="GANTT CHART" tip="Timeline showing which process ran at each unit of time." color="var(--t1)"/>
               </div>
-              <GanttBar steps={steps} currentStep={step}/>
+              <GanttBar steps={steps} currentStep={step} onScrub={(i)=>{setPlay(false);setStep(i);}}/>
 
             {/* action buttons row */}
             <div style={{flexShrink:0,display:"flex",gap:10}}>
@@ -1311,7 +1514,7 @@ export default function App(){
                   </span>
                 </div>
               </div>
-              <div style={{flex:1,overflowY:"auto",background:"var(--bg)",
+              <div ref={kernelRef} style={{flex:1,overflowY:"auto",background:"var(--bg)",
                 borderRadius:10,border:"1px solid var(--line2)",
                 padding:"10px 12px",fontFamily:"var(--mono)",fontSize:12,
                 display:"flex",flexDirection:"column",gap:4}}>
@@ -1325,7 +1528,7 @@ export default function App(){
                   const logs=[];
                   logs.push({type:"boot",t:0,msg:`Scheduler initialised · Algorithm: ${algo.toUpperCase()}${algo==="rr"?" (quantum="+quantum+")":""}`,color:"var(--t3)"});
                   procs.forEach(p=>{
-                    logs.push({type:"arrive",t:p.arrival,msg:`proc ${p.id} → READY QUEUE (burst=${p.burst})`,color:"var(--t2)"});
+                    logs.push({type:"arrive",t:p.arrival,msg:`proc ${p.id} → READY QUEUE (burst=${p.burst}${algo==="priority"?`, pri=${p.priority||"?"}`:""})`,color:"var(--t2)"});
                   });
                   steps.slice(0,step+1).forEach((s,i)=>{
                     const prev=i>0?steps[i-1]:null;
@@ -1346,6 +1549,8 @@ export default function App(){
                       display:"flex",gap:8,alignItems:"flex-start",
                       padding:"5px 7px",borderRadius:6,
                       background:log.type==="dispatch"?`${log.color}10`:"transparent",
+                      borderTop:i>0?"1px solid rgba(255,255,255,.06)":"none",
+                      marginTop:i>0?2:0,
                       animation:i===sortedLogs.length-1?"slideUp .2s ease both":"none",
                     }}>
                       <span style={{color:log.color,flexShrink:0,fontSize:11,marginTop:1}}>{ICONS[log.type]}</span>
